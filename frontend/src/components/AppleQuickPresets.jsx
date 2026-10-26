@@ -10,6 +10,20 @@ export default function AppleQuickPresets({ samples, onSelectSample, activeSampl
       };
     }
 
+    if (id === 'ibomma_piracy_malware') {
+      return {
+        bg: 'bg-rose-600/20 text-rose-200 border-rose-400/40 hover:bg-rose-600/30 hover:border-rose-300 shadow-sm shadow-rose-500/20',
+        badge: 'bg-rose-500/30 text-rose-100 border border-rose-400/40',
+      };
+    }
+
+    if (id === 'sextortion_blackmail') {
+      return {
+        bg: 'bg-fuchsia-600/20 text-fuchsia-200 border-fuchsia-400/40 hover:bg-fuchsia-600/30 hover:border-fuchsia-300 shadow-sm shadow-fuchsia-500/20',
+        badge: 'bg-fuchsia-500/30 text-fuchsia-100 border border-fuchsia-400/40',
+      };
+    }
+
     if (isSafe) {
       if (id.includes('otp')) {
         return {
@@ -58,6 +72,8 @@ export default function AppleQuickPresets({ samples, onSelectSample, activeSampl
   };
 
   const getPresetEmoji = (id, type, isSafe) => {
+    if (id === 'ibomma_piracy_malware') return '🎬';
+    if (id === 'sextortion_blackmail') return '🔞';
     if (isSafe) return id.includes('otp') ? '🔑' : '🛍️';
     switch (type) {
       case 'email': return '⚡️';
@@ -76,6 +92,8 @@ export default function AppleQuickPresets({ samples, onSelectSample, activeSampl
       case 'upi_otp_sms': return 'UPI Refund QR Trap';
       case 'lottery_scam': return 'KBC WhatsApp Lottery';
       case 'delivery_fee_scam': return 'India Post Redelivery';
+      case 'ibomma_piracy_malware': return 'iBomma Piracy / APK Trap';
+      case 'sextortion_blackmail': return 'Adult Site / Blackmail';
       case 'genuine_order_confirmation': return 'Amazon Order Verified';
       case 'genuine_bank_otp': return 'HDFC Official OTP';
       default: return 'Sample Scenario';
@@ -118,7 +136,7 @@ export default function AppleQuickPresets({ samples, onSelectSample, activeSampl
               <span
                 className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full ${styles.badge}`}
               >
-                {isSafe ? 'Genuine' : 'Scam'}
+                {isSafe ? 'Genuine' : 'Threat'}
               </span>
             </button>
           );

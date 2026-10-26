@@ -10,34 +10,34 @@ logger = logging.getLogger("promptshield.analyzer")
 
 
 def build_system_prompt() -> str:
-    return """You are PromptShield, an elite Explainable Generative AI system specializing in cyber fraud detection, scam pattern analysis, and digital citizen safety.
+    return """You are PromptShield, an elite Explainable Generative AI system specializing in cyber fraud detection, scam pattern analysis, prohibited link identification (including illicit movie piracy like iBomma, adult/porn scams, and malware droppers), and digital citizen safety.
 
-Your job is to analyze user-submitted messages (SMS, email, job offers, payment alerts, etc.) and produce a rigorous, explainable, and empathetic safety evaluation.
+Your job is to analyze user-submitted messages (SMS, email, job offers, payment alerts, movie links, adult/sextortion claims, etc.) and produce a rigorous, explainable, and empathetic safety evaluation.
 
 You MUST respond strictly with a valid JSON object matching this schema:
 {
   "risk_level": "safe" | "suspicious" | "likely_scam",
   "risk_score": <integer from 0 to 100>,
-  "scam_type": "<e.g., Banking Phishing, UPI / QR Code Fraud, Advance Fee Lottery Scam, Fake Job Offer, Delivery Smishing, Legitimate Notification>",
+  "scam_type": "<e.g., Banking Phishing, UPI / QR Code Fraud, Advance Fee Lottery Scam, Fake Job Offer, Delivery Smishing, Prohibited Piracy & Malware APK, Adult Sextortion & Blackmail, Legitimate Notification>",
   "red_flags": [
     {
       "quote": "<exact short quote or phrase from the original message>",
-      "reason": "<clear explanation of why this is dangerous or deceptive>"
+      "reason": "<clear explanation of why this is dangerous, deceptive, or prohibited>"
     }
   ],
   "explanation": "<simple plain language explanation in 3 to 4 sentences explaining the verdict clearly to a non-technical user>",
   "safe_next_steps": [
-    "<actionable safe step, e.g., 'Do not click on any link in the message', 'Block and report the sender', 'If money was lost, report immediately to cybercrime.gov.in or dial 1930 in India'>"
+    "<actionable safe step, e.g., 'Do not click on any link or download APK files', 'Block and report the sender', 'If money or harassment occurred, report immediately to cybercrime.gov.in or dial 1930 in India'>"
   ],
   "what_not_to_do": [
-    "<critical warning of what to avoid, e.g., 'Never enter your UPI PIN to receive money', 'Never share one-time passwords (OTP) with anyone'>"
+    "<critical warning of what to avoid, e.g., 'Never install unknown APKs outside official app stores', 'Never pay blackmail or ransom demands'>"
   ]
 }
 
 Guidelines:
 - "safe": 0-30 risk score. Legitimate messages with no malicious triggers.
 - "suspicious": 31-70 risk score. Dubious, unverified, or unusual phrasing.
-- "likely_scam": 71-100 risk score. Obvious signs of fraud, phishing, impersonation, or credential harvesting.
+- "likely_scam": 71-100 risk score. Obvious signs of fraud, phishing, piracy malware droppers, sextortion, or credential harvesting.
 - Quotes in red_flags MUST be exact substrings found in the original message so they can be highlighted in the UI.
 - Do NOT output markdown code blocks (```json ... ```) if possible, or ensure it is valid JSON.
 """
@@ -58,7 +58,7 @@ def build_user_prompt(message: str, message_type: str, rule_findings: List[RuleF
 Automated Rule Engine Findings:
 {rules_summary}
 
-Analyze the message carefully. Identify deceptive patterns, psychological manipulation, credential requests, or spoofed links. Return strict JSON."""
+Analyze the message carefully. Identify deceptive patterns, psychological manipulation, credential requests, piracy malware droppers (e.g., iBomma), adult/sextortion blackmail, or spoofed links. Return strict JSON."""
 
 
 async def call_claude(api_key: str, message: str, message_type: str, rule_findings: List[RuleFinding]) -> Optional[Dict[str, Any]]:
@@ -185,7 +185,9 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
     has_credentials = any(f.category == "Credential & Payment Trap" for f in findings)
     has_too_good = any(f.category == "Too-Good-To-Be-True Offer" for f in findings)
     has_spoofed_url = any(f.category in ["Suspicious or Shortened URLs", "High-Risk Domain TLDs", "Lookalike / Brand Spoofing Link"] for f in findings)
-    has_impersonation = any(f.category == "Institutional Impersonation Claim" for f in findings)
+    has_piracy = any("Piracy" in f.category for f in findings)
+    has_adult = any("Adult" in f.category for f in findings)
+    has_apk = any("APK" in f.category for f in findings)
 
     # 1. URL Analysis
     for f in findings:
@@ -194,11 +196,88 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
                 exact_quote = find_quote_in_text(phrase, message) or phrase
                 red_flags.append({
                     "quote": exact_quote,
-                    "reason": f"Suspicious or unverified domain ('{phrase}'). Scammers direct victims to spoofed portals to harvest credentials."
+                    "reason": f"Suspicious or unverified domain ('{phrase}'). Scammers direct victims to spoofed portals to harvest credentials or drop malware."
                 })
                 score += 35
 
-    # 2. Fake Job / Task Scam Checks
+    # 2. Piracy & Illicit Media Links (iBomma, MovieRulz, Torrents)
+    if has_piracy or "ibomma" in text_lower or "movierulz" in text_lower or "tamilmv" in text_lower or "torrent" in text_lower:
+        ibomma_q = (
+            find_quote_in_text("ibomma", message) or
+            find_quote_in_text("movierulz", message) or
+            find_quote_in_text("tamilmv", message) or
+            find_quote_in_text("torrent", message) or
+            "ibomma"
+        )
+        red_flags.append({
+            "quote": ibomma_q,
+            "reason": "Prohibited Pirated Streaming Portal: Platforms like iBomma distribute copyright-infringing content and are legally banned. They serve as primary distribution vectors for infostealers, trojans, and malicious adware."
+        })
+        score += 50
+        scam_types.append("Prohibited Piracy & Malware Distribution Threat")
+
+    # 3. Untrusted APK & Mod App Droppers
+    if has_apk or ".apk" in text_lower or "install player app" in text_lower or "download apk" in text_lower:
+        apk_q = (
+            find_quote_in_text(".apk", message) or
+            find_quote_in_text("download apk", message) or
+            find_quote_in_text("install player app", message) or
+            find_quote_in_text("install the player app", message) or
+            "APK"
+        )
+        red_flags.append({
+            "quote": apk_q,
+            "reason": "Untrusted App Sideloading (APK Dropper): Prompts to sideload Android APK files from outside the Google Play Store frequently install spyware designed to hijack SMS OTPs, contacts, and bank apps."
+        })
+        score += 45
+        if "Prohibited Piracy & Malware Distribution Threat" not in scam_types:
+            scam_types.append("Malicious APK / Trojan Dropper")
+
+    # 4. Prohibited Adult Lures & Sextortion Blackmail
+    if has_adult or "recorded you" in text_lower or "dirty video" in text_lower or "porn" in text_lower or "compromised your webcam" in text_lower or "pay bitcoin or leak" in text_lower or "xvideos" in text_lower or "nude" in text_lower:
+        if "recorded you" in text_lower or "compromised your webcam" in text_lower or "dirty video" in text_lower or "leaked video of you" in text_lower:
+            extort_q = (
+                find_quote_in_text("recorded you watching", message) or
+                find_quote_in_text("recorded your screen", message) or
+                find_quote_in_text("compromised your webcam", message) or
+                find_quote_in_text("leaked video of you", message) or
+                "recorded you"
+            )
+            red_flags.append({
+                "quote": extort_q,
+                "reason": "Sextortion Scare Bluff: Attackers mass-blast fabricated claims alleging they have recorded your screen or webcam to panic you into paying extortion money."
+            })
+            score += 50
+
+        if "pay bitcoin" in text_lower or "bitcoin within" in text_lower or "send to all your contacts" in text_lower:
+            btc_q = (
+                find_quote_in_text("send to all your contacts", message) or
+                find_quote_in_text("pay bitcoin", message) or
+                find_quote_in_text("transfer $500 in Bitcoin", message) or
+                "Bitcoin"
+            )
+            red_flags.append({
+                "quote": btc_q,
+                "reason": "Cryptocurrency Extortion Demand: Demanding untraceable cryptocurrency transfers (Bitcoin, Monero) is the classic hallmark of automated extortion and cyber blackmail rings."
+            })
+            score += 45
+
+        if any(w in text_lower for w in ["porn", "xxx", "xvideos", "nude", "camgirl", "adult"]):
+            adult_q = (
+                find_quote_in_text("porn", message) or
+                find_quote_in_text("adult sites", message) or
+                find_quote_in_text("nude video", message) or
+                "adult content"
+            )
+            red_flags.append({
+                "quote": adult_q,
+                "reason": "Prohibited Adult Lure: Adult and pornographic link schemes exploit taboo subjects to induce shame, deliver ransomware, or trick victims into honeytrap extortion."
+            })
+            score += 35
+
+        scam_types.append("Adult Content / Sextortion & Blackmail Threat")
+
+    # 5. Fake Job / Task Scam Checks
     if ("youtube" in text_lower and "like" in text_lower) or "telegram" in text_lower or ("part-time" in text_lower and "per day" in text_lower) or "amazon hr" in text_lower:
         if "amazon hr" in text_lower:
             q = find_quote_in_text("Amazon HR", message) or "Amazon HR"
@@ -226,7 +305,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_types.append("Fake Job / Task-Based Telegram Fraud")
 
-    # 3. Lottery / Lucky Draw Checks
+    # 6. Lottery / Lucky Draw Checks
     if "lottery" in text_lower or "lucky draw" in text_lower or "won a cash prize" in text_lower or "25,00,000" in text_lower:
         if "25,00,000" in text_lower or "cash prize" in text_lower:
             q = find_quote_in_text("cash prize of Rs 25,00,000", message) or find_quote_in_text("cash prize", message) or "cash prize"
@@ -259,7 +338,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_types.append("Lottery / Advance-Fee Scam")
 
-    # 4. UPI / QR / PIN Checks
+    # 7. UPI / QR / PIN Checks
     if "qr" in text_lower and ("scan" in text_lower or "receive" in text_lower or "refund" in text_lower):
         q = find_quote_in_text("Scan this QR code", message) or find_quote_in_text("Scan", message) or "Scan this QR code"
         red_flags.append({
@@ -284,7 +363,6 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
     if "otp" in text_lower:
         if "never share" in text_lower or "do not share" in text_lower and not has_spoofed_url and not has_urgency and len(findings) <= 1:
-            # Genuine OTP alert warning user NOT to share
             pass
         elif "except our verified executive" in text_lower or "share your otp" in text_lower or "enter otp" in text_lower:
             otp_q = find_quote_in_text("except our verified executive", message) or find_quote_in_text("OTP", message) or "OTP"
@@ -294,7 +372,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
             })
             score += 35
 
-    # 5. Delivery Smishing Checks
+    # 8. Delivery Smishing Checks
     if ("parcel" in text_lower or "delivery" in text_lower or "package" in text_lower) and ("fee" in text_lower or "redeliver" in text_lower or "incomplete address" in text_lower):
         if "redelivery fee" in text_lower or "fee within" in text_lower:
             deliv_q = find_quote_in_text("Pay Rs 48 redelivery fee", message) or find_quote_in_text("redelivery fee", message) or "redelivery fee"
@@ -314,7 +392,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_types.append("Courier / Delivery Fee Smishing")
 
-    # 6. Urgency & Account Suspension Checks
+    # 9. Urgency & Account Suspension Checks
     if has_urgency:
         urgency_q = (
             find_quote_in_text("within 24 hours", message) or
@@ -332,7 +410,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
         if not scam_types:
             scam_types.append("Urgent Account Suspension Threat")
 
-    # 7. Fake KYC / PAN Update
+    # 10. Fake KYC / PAN Update
     if "kyc" in text_lower or "pan and aadhaar" in text_lower:
         if has_spoofed_url or has_urgency:
             kyc_q = find_quote_in_text("pending KYC verification", message) or find_quote_in_text("update your PAN and Aadhaar", message) or find_quote_in_text("KYC", message) or "KYC"
@@ -356,7 +434,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
     is_safe = False
     if ("hdfc bank never asks" in text_lower and "never share this otp" in text_lower) or \
        ("your official amazon account under your orders" in text_lower) or \
-       ("thank you for your order" in text_lower and not has_spoofed_url and not has_urgency and not has_credentials):
+       ("thank you for your order" in text_lower and not has_spoofed_url and not has_urgency and not has_credentials and not has_piracy and not has_adult):
         is_safe = True
 
     if is_safe:
@@ -390,7 +468,41 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_type = scam_types[0] if scam_types else ("Suspicious Unverified Message" if risk_level != "safe" else "Safe Communication")
 
-        if risk_level == "likely_scam":
+        if "Piracy" in scam_type or "Malware APK" in scam_type:
+            explanation = (
+                f"This message promotes a prohibited pirated streaming destination or unverified APK dropper ({scam_type}). "
+                "Sites like iBomma and unverified streaming links are legally banned and heavily weaponized with spyware, adware, and trojans. "
+                "Sideloading APK players or clicking streaming redirects exposes your smartphone or computer to unauthorized data harvesting and malware infection."
+            )
+            safe_steps = [
+                "Do NOT download, sideload, or install any APK files or player software from this link.",
+                "Stick strictly to licensed, verified streaming platforms (Netflix, Amazon Prime, Disney+ Hotstar, YouTube).",
+                "If you installed an APK from this site, uninstall it immediately and run a scan with Google Play Protect or a trusted mobile antivirus.",
+                "Block and report the sender transmitting prohibited piracy links."
+            ]
+            what_not_to_do = [
+                "NEVER grant device administrative access or Accessibility permissions to third-party movie APKs.",
+                "Do not disable 'Unknown Sources' protection in your Android security settings.",
+                "Never enter payment or credit card details on free movie streaming portals."
+            ]
+        elif "Adult" in scam_type or "Sextortion" in scam_type:
+            explanation = (
+                "This message represents a prohibited adult lure or sextortion extortion attack. "
+                "Attackers use fear, shame, and fabricated claims of recorded webcam footage to intimidate victims into sending cryptocurrency or clicking malicious links. "
+                "These are almost always mass-automated scam templates sent to millions of leaked email addresses."
+            )
+            safe_steps = [
+                "Do NOT pay any money, ransom, or cryptocurrency. Paying marks you as a responsive target for further extortion.",
+                "Block and report the sender email address or phone number immediately.",
+                "Cover your device webcam with a physical shutter when not in use for peace of mind.",
+                "If genuine harassment or privacy breaches occur, file a report immediately at cybercrime.gov.in or dial helpline 1930."
+            ]
+            what_not_to_do = [
+                "NEVER transfer Bitcoin, gift cards, or bank funds to blackmailers.",
+                "Do not reply or negotiate with the attacker.",
+                "Do not click on adult verification links or download attachments claimed to contain 'proof'."
+            ]
+        elif risk_level == "likely_scam":
             explanation = (
                 f"This message displays classic characteristics of a {scam_type}. "
                 "The sender employs psychological pressure, spoofed identities, or malicious payment triggers designed to steal your money or credentials. "

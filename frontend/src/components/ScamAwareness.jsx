@@ -87,6 +87,48 @@ const SCAM_TOPICS = [
     example: 'India Post: Your package could not be delivered due to incomplete address. Pay Rs 48 redelivery fee within 12 hours.'
   },
   {
+    id: 'ibomma_piracy_malware',
+    iconGradient: 'from-red-600 via-rose-600 to-orange-500',
+    borderColor: 'border-rose-500/40',
+    iconEmoji: '🎬',
+    category: 'Prohibited Piracy & Malware APKs',
+    title: 'iBomma / Pirated Movie Links & Trojan APK Droppers',
+    summary: 'Links claiming to offer latest free HD movie streams on iBomma, MovieRulz, or TamilMV, prompting users to install a player APK.',
+    tactics: [
+      'Copyright-prohibited piracy portals blocked under Indian IT Act (Section 69A)',
+      'Drive-by download prompts instructing users to download untrusted .APK files',
+      'Bundled Trojan spyware that monitors SMS, steals banking OTPs, and accesses private photos',
+    ],
+    redFlags: [
+      'Offers newly released theater movies for "100% free streaming"',
+      'Prompts you to disable Android installation security ("Allow Unknown Sources")',
+      'Aggressive pop-up redirects leading to betting, adult, or fake antivirus sites',
+    ],
+    safeAction: 'Never sideload APKs from pirated movie sites. Use legitimate streaming services like Netflix, Hotstar, and Prime Video.',
+    example: 'Watch latest Telugu & Hindi blockbuster free on iBomma: http://ibomma.bar/movie - download and install player APK to watch.'
+  },
+  {
+    id: 'sextortion_blackmail',
+    iconGradient: 'from-fuchsia-600 via-purple-700 to-rose-700',
+    borderColor: 'border-fuchsia-500/40',
+    iconEmoji: '🔞',
+    category: 'Prohibited Adult & Sextortion',
+    title: 'Adult Site Webcam Blackmail & Sextortion Traps',
+    summary: 'Emails or messages threatening to leak compromising webcam footage of you visiting adult sites unless cryptocurrency is paid.',
+    tactics: [
+      'Mass automated spam targeting leaked email databases with generic bluff scripts',
+      'Exploiting personal shame, fear of social humiliation, and reputational dread',
+      'Demanding untraceable cryptocurrency payments (Bitcoin / Monero) within 24 to 48 hours',
+    ],
+    redFlags: [
+      'The sender cannot provide actual proof or screenshots of you',
+      'Urgent extortion ultimatum demanding Bitcoin transfer',
+      'Links directing you to adult verification portals or unknown chatrooms',
+    ],
+    safeAction: 'Do not pay any money. Attackers send these mass bluff emails indiscriminately. Block the sender and report to 1930.',
+    example: 'I recorded you through your webcam on adult sites. Pay $500 in Bitcoin to my wallet within 24 hours or I will leak it to your contacts.'
+  },
+  {
     id: 'lottery_advance_fee',
     iconGradient: 'from-rose-500 via-pink-600 to-red-600',
     borderColor: 'border-rose-500/30',
@@ -152,7 +194,7 @@ export default function ScamAwareness() {
           Common Scam Blueprints
         </h1>
         <p className="text-sm sm:text-base text-slate-300 mt-2.5 max-w-2xl mx-auto leading-relaxed font-medium">
-          Comprehensive forensics on social engineering tactics targeting digital citizens. Learn how attackers orchestrate psychological traps and how to respond.
+          Comprehensive forensics on social engineering tactics targeting digital citizens — from banking frauds and pirated movie APK droppers (e.g. iBomma) to sextortion and digital arrests.
         </p>
 
         {/* Search */}
@@ -162,7 +204,7 @@ export default function ScamAwareness() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search scams (e.g. UPI, KYC, Telegram, courier, digital arrest)..."
+            placeholder="Search scams (e.g. iBomma, porn, sextortion, UPI, KYC, courier)..."
             className="w-full pl-11 pr-4 py-3 rounded-full bg-black/60 border border-cyan-400/30 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
           />
         </div>

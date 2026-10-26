@@ -4,7 +4,7 @@ from .models import RuleFinding
 
 # URL pattern to extract URLs
 URL_PATTERN = re.compile(
-    r'(?:https?:\/\/|www\.)[^\s<>"\']+|[a-zA-Z0-9_\-\.]+\.(?:com|org|net|xyz|top|site|club|buzz|info|click|live|in|co|tech|online|store|vip|app|link|cc|icu|rest|work)[^\s<>"\']*',
+    r'(?:https?:\/\/|www\.)[^\s<>"\']+|[a-zA-Z0-9_\-\.]+\.(?:com|org|net|xyz|top|site|club|buzz|info|click|live|in|co|tech|online|store|vip|app|link|cc|icu|rest|work|bar|stream|to|is|pw|me)[^\s<>"\']*',
     re.IGNORECASE
 )
 
@@ -17,7 +17,7 @@ SHORTENER_DOMAINS = [
 # Suspicious top-level domains often used in scam campaigns
 SUSPICIOUS_TLDS = [
     ".xyz", ".top", ".club", ".buzz", ".click", ".vip", ".icu", ".rest",
-    ".work", ".cc", ".link", ".online", ".site", ".tk", ".ml", ".ga", ".cf", ".gq"
+    ".work", ".cc", ".link", ".online", ".site", ".tk", ".ml", ".ga", ".cf", ".gq", ".bar", ".pw"
 ]
 
 # Targeted lookalike or spoof brand keywords
@@ -25,6 +25,26 @@ LOOKALIKE_BRANDS = [
     r"sbi[-_.]?kyc", r"hdfc[-_.]?net", r"icici[-_.]?secure", r"paytm[-_.]?verify",
     r"paypa[l1]", r"amaz[o0]n", r"netfl[i1]x", r"apple[-_.]?id", r"ind[a-z]*post",
     r"fedex[-_.]?track", r"dhl[-_.]?express", r"income[-_.]?tax", r"gov[-_.]?refund"
+]
+
+# Piracy / Prohibited illegal streaming platforms (e.g. iBomma, MovieRulz)
+PIRACY_DOMAINS_PATTERNS = [
+    r"\b(?:ibomma|i-bomma|movierulz|tamilmv|tamilrockers|filmyzilla|bolly4u|pagalworld|123movies|fmovies|torrent|piratebay|yts|rarbg|cinebloom)\b",
+    r"\b(?:free\s+movie\s+download|watch\s+movie\s+free|download\s+full\s+movie|hd\s+movie\s+download|watch\s+latest\s+leaked\s+movie)\b",
+    r"\b(?:ibomma\.[a-z]+|movierulz\.[a-z]+|tamilmv\.[a-z]+)\b"
+]
+
+# Prohibited adult, pornographic lures & sextortion extortion
+ADULT_SEXTORTION_PATTERNS = [
+    r"\b(?:recorded\s+you\s+watching|recorded\s+your\s+screen|dirty\s+video\s+of\s+you|leaked\s+video\s+of\s+you|compromised\s+your\s+webcam)\b",
+    r"\b(?:send\s+to\s+all\s+your\s+contacts|pay\s+bitcoin\s+or\s+leak|reputation\s+destroyed|blackmail)\b",
+    r"\b(?:xvideos|xnxx|porn|pornhub|adult\s+cam|nude\s+video|camgirl|escort\s+service|private\s+mms\s+leak|horny\s+girls|adult\s+chat)\b",
+    r"\b(?:watch\s+private\s+leaked\s+video|dating\s+hookup\s+app|leaked\s+onlyfans)\b"
+]
+
+# Malicious APK droppers & unverified app installation
+APK_DROPPER_PATTERNS = [
+    r"\b(?:download\s+apk|install\s+apk|download\s+mod\s+apk|\.apk\b|install\s+player\s+app|whatsapp\s+pink|free\s+netflix\s+apk)\b"
 ]
 
 # Urgency / Pressure keywords and phrases
@@ -89,6 +109,8 @@ def analyze_rules(message: str) -> List[RuleFinding]:
     shortened_urls = []
     suspicious_tld_urls = []
     lookalike_urls = []
+    piracy_urls = []
+    adult_urls = []
 
     for u in urls:
         u_low = u.lower()
@@ -100,6 +122,10 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             if re.search(brand, u_low):
                 lookalike_urls.append(u)
                 break
+        if any(p in u_low for p in ["ibomma", "movierulz", "tamilmv", "tamilrockers", "filmyzilla", "torrent"]):
+            piracy_urls.append(u)
+        if any(a in u_low for a in ["xxx", "porn", "xnxx", "xvideos", "cam", "sex", "nude"]):
+            adult_urls.append(u)
 
     if shortened_urls:
         findings.append(RuleFinding(
@@ -125,7 +151,46 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=lookalike_urls
         ))
 
-    # 2. Urgency and Pressure language
+    # 2. Piracy & Illicit Media Links (iBomma, torrents, etc.)
+    piracy_matches = list(piracy_urls)
+    for pattern in PIRACY_DOMAINS_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            piracy_matches.append(match.group(0))
+    if piracy_matches:
+        findings.append(RuleFinding(
+            category="Prohibited Piracy & Illicit Streaming Domain",
+            severity="high",
+            description="Message links to prohibited movie piracy sites (e.g. iBomma, MovieRulz) known for distributing spyware, adware, and illicit trojans.",
+            matched_phrases=list(dict.fromkeys(piracy_matches))
+        ))
+
+    # 3. Prohibited Adult Content & Sextortion Extortion
+    adult_matches = list(adult_urls)
+    for pattern in ADULT_SEXTORTION_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            adult_matches.append(match.group(0))
+    if adult_matches:
+        findings.append(RuleFinding(
+            category="Prohibited Adult Content & Sextortion Extortion",
+            severity="high",
+            description="Message contains adult honeytrap lures, prohibited explicit links, or webcam sextortion threats demanding cryptocurrency ransom.",
+            matched_phrases=list(dict.fromkeys(adult_matches))
+        ))
+
+    # 4. Untrusted APK Droppers
+    apk_matches = []
+    for pattern in APK_DROPPER_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            apk_matches.append(match.group(0))
+    if apk_matches:
+        findings.append(RuleFinding(
+            category="Malicious APK / Trojan Dropper",
+            severity="high",
+            description="Message instructs the recipient to sideload an untrusted Android APK file, risking device compromise and credential theft.",
+            matched_phrases=list(dict.fromkeys(apk_matches))
+        ))
+
+    # 5. Urgency and Pressure language
     urgency_matches = []
     for pattern in URGENCY_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -138,7 +203,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(urgency_matches))
         ))
 
-    # 3. Request for OTP / Passwords / Money
+    # 6. Request for OTP / Passwords / Money
     cred_matches = []
     for pattern in CREDENTIAL_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -151,7 +216,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(cred_matches))
         ))
 
-    # 4. Too-Good-To-Be-True / Lottery / Job Offers
+    # 7. Too-Good-To-Be-True / Lottery / Job Offers
     offer_matches = []
     for pattern in TOO_GOOD_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -164,7 +229,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(offer_matches))
         ))
 
-    # 5. Authority & Sender Impersonation
+    # 8. Authority & Sender Impersonation
     auth_matches = []
     for pattern in AUTHORITY_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -177,7 +242,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(auth_matches))
         ))
 
-    # 6. Poor Grammar, ALL CAPS, Excessive Punctuation
+    # 9. Poor Grammar, ALL CAPS, Excessive Punctuation
     punctuation_matches = re.findall(r'!{2,}|\?{2,}|[!A-Z\s]{15,}', message)
     if punctuation_matches:
         findings.append(RuleFinding(

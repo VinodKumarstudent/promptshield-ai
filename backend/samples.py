@@ -45,6 +45,24 @@ SAMPLE_MESSAGES = [
         "description": "Smishing attack requesting small token payment via a shortened link to harvest credit/debit card numbers."
     },
     {
+        "id": "ibomma_piracy_malware",
+        "category": "Prohibited Piracy Link",
+        "title": "iBomma Free Movie & APK Dropper",
+        "type": "general",
+        "text": "Watch latest blockbuster movies online free in 1080p HD on iBomma! Click http://ibomma.bar/stream-free and install the player app download apk to start watching immediately without subscription.",
+        "expected_risk": "likely_scam",
+        "description": "Prohibited pirated movie streaming portal link directing users to sideload an untrusted APK dropper containing trojans and spyware."
+    },
+    {
+        "id": "sextortion_blackmail",
+        "category": "Sextortion & Blackmail",
+        "title": "Adult Site Webcam Blackmail Scam",
+        "type": "email",
+        "text": "Warning: I recorded your screen and compromised your webcam while you were watching adult porn sites. I have a split video of you. Transfer $500 in Bitcoin within 24 hours or I will send to all your contacts and family.",
+        "expected_risk": "likely_scam",
+        "description": "Automated sextortion extortion scam attempting to coerce victim into paying cryptocurrency using fake webcam recording claims."
+    },
+    {
         "id": "genuine_order_confirmation",
         "category": "Genuine Order",
         "title": "Official E-Commerce Order Confirmation",

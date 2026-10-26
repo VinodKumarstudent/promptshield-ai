@@ -68,8 +68,8 @@ def test_scam_detection():
             genuine_passed += 1
             print(f"✅ [SAFE VERIFIED] ({data['risk_score']}/100) {s['title']} -> Clean")
 
-    print(f"\nSummary: {scams_passed}/5 Scams Blocked | {genuine_passed}/2 Genuine Verified Safe")
-    assert scams_passed == 5
+    print(f"\nSummary: {scams_passed}/7 Threats Blocked | {genuine_passed}/2 Genuine Verified Safe")
+    assert scams_passed == 7
     assert genuine_passed == 2
     print("🏆 ALL CRITICAL CRITERIA AND FALSE-ALARM CHECKS PASSED 100%!")
 
