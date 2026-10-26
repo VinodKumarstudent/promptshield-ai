@@ -11,17 +11,16 @@ const SCAM_TOPICS = [
     title: 'Bank Account Suspension & Fake KYC Updates',
     summary: 'SMS claiming your SBI/HDFC/ICICI NetBanking will be blocked in 24 hours unless you click a link to update PAN/Aadhaar.',
     tactics: [
-      'Spoofed domain names (e.g. sbi-kyc-update.xyz or netbanking-verify.top)',
+      'Spoofed domain names mimicking official portals',
       'Artificial countdown timer (12 to 24 hours urgency)',
       'Threat of immediate financial disruption or account blocking',
     ],
     redFlags: [
-      'SMS comes from a 10-digit mobile number instead of an official bank sender ID (e.g. VK-SBIINB)',
+      'SMS comes from a 10-digit personal mobile number instead of an official bank sender ID',
       'Links hosted on non-official TLDs like .xyz, .top, .live',
       'Asks for full NetBanking password, debit card PIN, or CVV',
     ],
-    safeAction: 'Banks never send web links to unblock accounts or update KYC. Visit your bank branch or use the official verified app only.',
-    example: 'Dear customer, your SBI account is blocked. Update PAN card immediately: http://sbi-kyc-update.xyz'
+    safeAction: 'Banks never send web links to unblock accounts or update KYC. Visit your bank branch or use the official verified app only.'
   },
   {
     id: 'job_task',
@@ -33,7 +32,7 @@ const SCAM_TOPICS = [
     summary: 'WhatsApp/Telegram message offering Rs 3,000 - Rs 8,000 per day for liking YouTube videos or writing Google Reviews.',
     tactics: [
       'Impersonation of Amazon HR, Meesho, or international marketing firms',
-      'Initial small payout (e.g. Rs 150) to build false trust',
+      'Initial small payout to build false trust',
       'Shifting victims to Telegram "VIP Investment Groups" where they must deposit large funds to withdraw their balance',
     ],
     redFlags: [
@@ -41,8 +40,7 @@ const SCAM_TOPICS = [
       'Excessively high daily wages for zero-skill work',
       'Requirement to pay "security deposit" or "prepaid task balance"',
     ],
-    safeAction: 'Legitimate companies never recruit employees over unsolicited WhatsApp messages nor do they charge money for job assignments.',
-    example: 'Amazon HR: Earn Rs 5,000 daily working 1 hour from home. Like 3 YouTube videos. Contact @AmazonTaskRecruiter on Telegram.'
+    safeAction: 'Legitimate companies never recruit employees over unsolicited WhatsApp messages nor do they charge money for job assignments.'
   },
   {
     id: 'upi_refund',
@@ -62,8 +60,7 @@ const SCAM_TOPICS = [
       'Any prompt asking you to enter your 4 or 6-digit UPI PIN for a refund',
       'Caller saying "Just press accept on PhonePe/GooglePay"',
     ],
-    safeAction: 'GOLDEN RULE OF UPI: You NEVER need to enter your UPI PIN or scan a QR code to receive money. PIN is strictly for DEBITING money.',
-    example: 'Your PhonePe refund of Rs 14,999 is approved. Scan this QR code and enter UPI PIN to receive funds.'
+    safeAction: 'GOLDEN RULE OF UPI: You NEVER need to enter your UPI PIN or scan a QR code to receive money. PIN is strictly for DEBITING money.'
   },
   {
     id: 'delivery_smishing',
@@ -83,8 +80,7 @@ const SCAM_TOPICS = [
       'Shortened or obscured URL instead of indiapost.gov.in',
       'Urgent 12-hour warning to prevent return of parcel',
     ],
-    safeAction: 'Track parcels exclusively on official courier sites using your tracking number. Never click SMS redirect links.',
-    example: 'India Post: Your package could not be delivered due to incomplete address. Pay Rs 48 redelivery fee within 12 hours.'
+    safeAction: 'Track parcels exclusively on official courier sites using your tracking number. Never click SMS redirect links.'
   },
   {
     id: 'ibomma_piracy_malware',
@@ -104,8 +100,7 @@ const SCAM_TOPICS = [
       'Prompts you to disable Android installation security ("Allow Unknown Sources")',
       'Aggressive pop-up redirects leading to betting, adult, or fake antivirus sites',
     ],
-    safeAction: 'Never sideload APKs from pirated movie sites. Use legitimate streaming services like Netflix, Hotstar, and Prime Video.',
-    example: 'Watch latest Telugu & Hindi blockbuster free on iBomma: http://ibomma.bar/movie - download and install player APK to watch.'
+    safeAction: 'Never sideload APKs from pirated movie sites. Use legitimate streaming services like Netflix, Hotstar, and Prime Video.'
   },
   {
     id: 'sextortion_blackmail',
@@ -125,8 +120,7 @@ const SCAM_TOPICS = [
       'Urgent extortion ultimatum demanding Bitcoin transfer',
       'Links directing you to adult verification portals or unknown chatrooms',
     ],
-    safeAction: 'Do not pay any money. Attackers send these mass bluff emails indiscriminately. Block the sender and report to 1930.',
-    example: 'I recorded you through your webcam on adult sites. Pay $500 in Bitcoin to my wallet within 24 hours or I will leak it to your contacts.'
+    safeAction: 'Do not pay any money. Attackers send these mass bluff emails indiscriminately. Block the sender and report to 1930.'
   },
   {
     id: 'lottery_advance_fee',
@@ -146,8 +140,7 @@ const SCAM_TOPICS = [
       'The prize money requires upfront payment to an individual UPI address',
       'Scammer insists you do not discuss this with family or bank staff',
     ],
-    safeAction: 'There is no such thing as an unentered WhatsApp lottery. Delete the message and block the sender immediately.',
-    example: 'CONGRATULATIONS! Your mobile number won Rs 25,00,000 in KBC Lucky Draw. Transfer Rs 4,500 customs fee to claim.'
+    safeAction: 'There is no such thing as an unentered WhatsApp lottery. Delete the message and block the sender immediately.'
   },
   {
     id: 'digital_arrest',
@@ -167,8 +160,7 @@ const SCAM_TOPICS = [
       'Police or courts NEVER conduct interrogations or issue warrants via WhatsApp or Skype',
       'Law enforcement NEVER instructs citizens to transfer money to personal bank accounts',
     ],
-    safeAction: 'Hang up immediately. No police agency in India arrests citizens over video calls. Report to 1930 immediately.',
-    example: 'This is Crime Branch Mumbai. A package containing illegal drugs was booked using your Aadhaar. Connect on Skype for Digital Arrest.'
+    safeAction: 'Hang up immediately. No police agency in India arrests citizens over video calls. Report to 1930 immediately.'
   }
 ];
 
@@ -194,7 +186,7 @@ export default function ScamAwareness() {
           Common Scam Blueprints
         </h1>
         <p className="text-sm sm:text-base text-slate-300 mt-2.5 max-w-2xl mx-auto leading-relaxed font-medium">
-          Comprehensive forensics on social engineering tactics targeting digital citizens — from banking frauds and pirated movie APK droppers (e.g. iBomma) to sextortion and digital arrests.
+          Comprehensive forensics on social engineering tactics targeting digital citizens — from banking frauds and pirated movie APK droppers to sextortion and digital arrests.
         </p>
 
         {/* Search */}
@@ -204,7 +196,7 @@ export default function ScamAwareness() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search scams (e.g. iBomma, porn, sextortion, UPI, KYC, courier)..."
+            placeholder="Search scams by category, keyword, or modus operandi..."
             className="w-full pl-11 pr-4 py-3 rounded-full bg-black/60 border border-cyan-400/30 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
           />
         </div>
@@ -250,17 +242,7 @@ export default function ScamAwareness() {
               </button>
 
               {isExpanded && (
-                <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-white/10 space-y-4 text-xs sm:text-sm">
-                  {/* Real World Example Card */}
-                  <div className="bg-black/50 p-4 rounded-2xl border border-amber-500/30">
-                    <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider block mb-1">
-                      Real-World Lure Pattern
-                    </span>
-                    <p className="font-mono text-xs text-amber-200 italic">
-                      "{topic.example}"
-                    </p>
-                  </div>
-
+                <div className="px-5 sm:px-6 pb-6 pt-4 border-t border-white/10 space-y-4 text-xs sm:text-sm">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Tactics */}
                     <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/10">
