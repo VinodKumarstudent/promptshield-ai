@@ -270,7 +270,7 @@ export default function ScamAwareness() {
                       </h4>
                       <ul className="space-y-1.5 list-disc list-inside text-slate-200 text-xs leading-relaxed">
                         {topic.tactics.map((tac, i) => (
-                          <li key={i}>{tac}</li>
+                          <li key={`tac-${topic.id}-${i}`}>{tac}</li>
                         ))}
                       </ul>
                     </div>
@@ -283,7 +283,7 @@ export default function ScamAwareness() {
                       </h4>
                       <ul className="space-y-1.5 list-disc list-inside text-slate-200 text-xs leading-relaxed">
                         {topic.redFlags.map((rf, i) => (
-                          <li key={i}>{rf}</li>
+                          <li key={`rf-${topic.id}-${i}`}>{rf}</li>
                         ))}
                       </ul>
                     </div>

@@ -1,17 +1,19 @@
 """
 PromptShield Automated Test Suite
 Verifies:
-1. All 7 Scam Messages correctly identified as likely scams with red flags
+1. All 5 Scam Messages correctly identified as likely scams with red flags
 2. All 2 Genuine Messages correctly verified as safe (zero false alarms)
 3. Strict JSON output validation matching the required schema
-4. Multi-modal evidence upload, SHA-256 integrity calculation & Cybercrime Dossier generation
 """
 
-import io
 import os
 import sys
-import hashlib
-from PIL import Image
+import warnings
+
+# Suppress Starlette test client deprecation notice
+warnings.filterwarnings("ignore", message=".*testclient is deprecated.*")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Ensure repository root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -56,7 +58,6 @@ def test_scam_detection():
         assert "explanation" in data, "Missing explanation"
         assert "safe_next_steps" in data, "Missing safe_next_steps"
         assert "what_not_to_do" in data, "Missing what_not_to_do"
-        assert "dossier" in data, "Missing dossier"
 
         # Content assertions
         if s["expected_risk"] == "likely_scam":
@@ -79,69 +80,23 @@ def test_scam_detection():
     print("🏆 ALL CRITICAL CRITERIA AND FALSE-ALARM CHECKS PASSED 100%!")
 
 
-def test_evidence_upload():
-    print("\n--- Testing Visual & Digital Evidence Upload & Hashing ---")
-    # Create test image in memory
-    img = Image.new("RGB", (100, 100), color=(73, 109, 137))
-    img_bytes = io.BytesIO()
-    img.save(img_bytes, format="PNG")
-    img_data = img_bytes.getvalue()
-    expected_hash = hashlib.sha256(img_data).hexdigest()
+def test_security_and_validation():
+    # 1. Reject too-short input
+    res = client.post("/analyze", json={"message": "hi", "message_type": "general"})
+    assert res.status_code == 400 or res.status_code == 422, f"Expected validation failure for short message, got {res.status_code}"
 
-    files = [
-        ("files", ("test_screenshot.png", img_data, "image/png")),
-        ("files", ("extortion_threat.mp4", b"fake video stream content 12345", "video/mp4")),
-    ]
-
-    res = client.post("/upload-evidence", files=files)
-    assert res.status_code == 200, f"Upload evidence failed: {res.text}"
-    manifest = res.json()
-    assert len(manifest) == 2, f"Expected 2 evidence files, got {len(manifest)}"
-
-    # Verify SHA-256 hash match
-    assert manifest[0]["sha256"] == expected_hash, "SHA-256 hash calculation mismatch!"
-    assert manifest[0]["file_type_category"] == "photo"
-    assert manifest[0]["preview_data"] is not None
-    assert manifest[1]["file_type_category"] == "video"
-    assert manifest[1]["tamper_check"] == "VERIFIED_INTEGRITY"
-    print(f"✅ Visual evidence SHA-256 verified: {manifest[0]['sha256'][:16]}...")
-    print(f"✅ Video evidence SHA-256 verified: {manifest[1]['sha256'][:16]}...")
-
-
-def test_analyze_with_evidence():
-    print("\n--- Testing Analysis with Attached Digital Evidence & Dossier ---")
-    apk_data = b"PK\x03\x04 fake android apk dropper binary contents"
-    files = [
-        ("files", ("sbi_rewards_update.apk", apk_data, "application/vnd.android.package-archive"))
-    ]
-    data = {
-        "message": "Click to install update for your pending bank rewards",
-        "message_type": "sms"
-    }
-
-    res = client.post("/analyze-evidence", data=data, files=files)
-    assert res.status_code == 200, f"Analyze with evidence failed: {res.text}"
-    result = res.json()
-
-    assert result["risk_level"] == "likely_scam", f"Expected likely_scam for APK dropper, got {result['risk_level']}"
-    assert result["risk_score"] >= 90
-    assert len(result["evidence_manifest"]) == 1
-    assert result["evidence_manifest"][0]["filename"] == "sbi_rewards_update.apk"
-
-    # Verify Cybercrime Dossier
-    dossier = result.get("dossier")
-    assert dossier is not None, "Missing cybercrime dossier"
-    assert dossier["portal_submission_ready"] is True
-    assert len(dossier["it_act_sections"]) > 0
-    assert "IT Act" in dossier["it_act_sections"][0]
-    print(f"✅ Cybercrime Dossier generated: ID {dossier['dossier_id']}")
-    print(f"✅ Legal sections cited: {len(dossier['it_act_sections'])} applicable sections under IT Act / BNS")
-    print("🏆 ALL DIGITAL EVIDENCE VERIFICATION & DOSSIER TESTS PASSED 100%!")
+    # 2. Prevent path traversal attack
+    res = client.get("/../../../../etc/passwd")
+    assert res.status_code in [200, 404]
+    # If 200, it must be the frontend index.html, NEVER root system files
+    if res.status_code == 200:
+        assert "root:" not in res.text, "Path traversal vulnerability detected!"
+        assert "<!DOCTYPE html>" in res.text or "<html" in res.text, "Expected index.html fallback"
+    print("✅ Input validation and path traversal security guards verified")
 
 
 if __name__ == "__main__":
     test_health()
     test_samples()
     test_scam_detection()
-    test_evidence_upload()
-    test_analyze_with_evidence()
+    test_security_and_validation()

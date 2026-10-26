@@ -110,7 +110,7 @@ export default function InteractiveViewer({ message, redFlags = [], explanation 
               <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
               <span className="font-bold underline decoration-rose-300 underline-offset-4">{seg.text}</span>
               {isUrl && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 text-[10px] bg-black/70 text-rose-300 rounded font-mono ml-1 border border-rose-500/40 font-bold">
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-black/70 text-rose-300 rounded font-mono ml-1 border border-rose-500/40 font-bold">
                   <Lock className="w-2.5 h-2.5" /> Blocked Link
                 </span>
               )}
@@ -191,7 +191,7 @@ export default function InteractiveViewer({ message, redFlags = [], explanation 
               const isSelected = selectedFlagIndex === idx;
               return (
                 <div
-                  key={idx}
+                  key={`flag-${idx}-${flag.quote?.slice(0, 15) || ''}`}
                   onClick={() => setSelectedFlagIndex(isSelected ? null : idx)}
                   className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 cursor-pointer ${
                     isSelected

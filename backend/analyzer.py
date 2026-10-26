@@ -2,9 +2,8 @@ import os
 import json
 import logging
 import httpx
-from datetime import datetime
 from typing import List, Dict, Any, Optional
-from .models import AnalyzeRequest, AnalyzeResponse, RedFlag, RuleFinding, EvidenceFile, CybercrimeDossier
+from .models import AnalyzeRequest, AnalyzeResponse, RedFlag, RuleFinding
 from .rules import analyze_rules, extract_urls
 
 logger = logging.getLogger("promptshield.analyzer")
@@ -560,62 +559,9 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
     }
 
 
-def get_it_act_sections(scam_type: str) -> List[str]:
-    st = scam_type.lower()
-    if any(k in st for k in ["upi", "bank", "refund", "qr", "phishing"]):
-        return [
-            "IT Act 2000 Section 66D - Cheating by personation using computer resource (up to 3 years imprisonment)",
-            "IT Act 2000 Section 66C - Identity theft & unauthorized authentication credential capture",
-            "Bharatiya Nyaya Sanhita (BNS) 2023 Section 318(4) - Cheating and dishonestly inducing delivery of property"
-        ]
-    elif any(k in st for k in ["job", "task", "work from home", "telegram"]):
-        return [
-            "IT Act 2000 Section 66D - Cheating by personation and online employment fraud",
-            "BNS 2023 Section 316 - Criminal breach of trust in organized recruitment syndicate",
-            "BNS 2023 Section 318 - Cheating with intent to defraud job seekers"
-        ]
-    elif any(k in st for k in ["piracy", "ibomma", "malware", "apk", "trojan"]):
-        return [
-            "IT Act 2000 Section 66 - Computer Related Offences (Introducing virus, malware, or illicit payload)",
-            "IT Act 2000 Section 43 - Damage to computer systems and unauthorized data extraction",
-            "Copyright Act 1957 Section 63/65A - Circumvention of technical protection and distribution of pirated cinematograph works"
-        ]
-    elif any(k in st for k in ["sextortion", "blackmail", "adult", "webcam", "porn"]):
-        return [
-            "IT Act 2000 Section 67 / 67A - Transmission of sexually explicit / obscene material in electronic form (up to 5 years imprisonment)",
-            "IT Act 2000 Section 66E - Violation of bodily privacy and cyber harassment",
-            "BNS 2023 Section 308 - Extortion by threat of false accusation or video dissemination"
-        ]
-    elif any(k in st for k in ["lottery", "kbc", "prize", "customs"]):
-        return [
-            "IT Act 2000 Section 66D - Advance fee fraud through digital impersonation",
-            "BNS 2023 Section 318 - Deceptive inducement under the pretext of lottery winnings",
-            "Prize Chits and Money Circulation Schemes (Banning) Act, 1978"
-        ]
-    else:
-        return [
-            "IT Act 2000 Section 66D - Cheating by personation using computer systems",
-            "BNS 2023 Section 318 - Cheating and online financial deception"
-        ]
-
-
 async def analyze_message(req: AnalyzeRequest) -> AnalyzeResponse:
     # Step 1: Run deterministic rule-based checks
     rule_findings = analyze_rules(req.message)
-
-    # Check uploaded evidence files for hazardous payload extensions or spoofing
-    evidence_manifest = req.evidence_files or []
-    has_dangerous_file = False
-    for ev in evidence_manifest:
-        fname = ev.filename.lower()
-        if any(fname.endswith(ext) for ext in [".apk", ".exe", ".scr", ".bat", ".cmd", ".vbs", ".msi", ".jar"]):
-            has_dangerous_file = True
-            rule_findings.append(RuleFinding(
-                category="Malicious Payload Evidence",
-                severity="high",
-                description=f"Evidence file '{ev.filename}' contains executable/dropper payload risking total device compromise.",
-                matched_phrases=[ev.filename]
-            ))
 
     anthropic_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
     openai_key = os.getenv("OPENAI_API_KEY", "").strip()
@@ -660,64 +606,23 @@ async def analyze_message(req: AnalyzeRequest) -> AnalyzeResponse:
         if isinstance(rf, dict) and "quote" in rf and "reason" in rf:
             formatted_red_flags.append(RedFlag(quote=str(rf["quote"]), reason=str(rf["reason"])))
 
-    # If dangerous evidence file detected, ensure it's recorded in red flags and elevates risk
-    if has_dangerous_file:
-        for ev in evidence_manifest:
-            fname = ev.filename.lower()
-            if any(fname.endswith(ext) for ext in [".apk", ".exe", ".scr", ".bat", ".cmd", ".vbs"]):
-                formatted_red_flags.insert(0, RedFlag(
-                    quote=ev.filename,
-                    reason=f"Attached evidence '{ev.filename}' is an executable/installer format heavily abused by scammers to deploy banking trojans and spy tools."
-                ))
-
     # Ensure risk_level is valid
     risk_level = str(llm_result.get("risk_level", "suspicious")).lower()
-    risk_score = int(llm_result.get("risk_score", 50))
-
-    if has_dangerous_file:
-        risk_level = "likely_scam"
-        risk_score = max(risk_score, 96)
-
     if risk_level not in ["safe", "suspicious", "likely_scam"]:
-        risk_level = "likely_scam" if risk_score >= 70 else ("suspicious" if risk_score >= 31 else "safe")
+        score = int(llm_result.get("risk_score", 50))
+        risk_level = "likely_scam" if score >= 70 else ("suspicious" if score >= 31 else "safe")
 
+    risk_score = int(llm_result.get("risk_score", 50))
     risk_score = max(0, min(100, risk_score))
-    scam_type = str(llm_result.get("scam_type", "Digital Communication"))
-    if has_dangerous_file and "malware" not in scam_type.lower() and "apk" not in scam_type.lower():
-        scam_type = f"{scam_type} with Malicious Dropper"
-
-    # Generate Cybercrime Evidence Dossier
-    now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    dossier_id = f"PS-CYBER-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-
-    dossier = CybercrimeDossier(
-        dossier_id=dossier_id,
-        generated_at=now_iso,
-        incident_type=scam_type,
-        risk_score=risk_score,
-        risk_level=risk_level,
-        summary=f"Forensic incident report classifying '{scam_type}' at risk index {risk_score}/100. Evaluated {len(evidence_manifest)} chain-of-custody evidence item(s).",
-        evidence_manifest=evidence_manifest,
-        it_act_sections=get_it_act_sections(scam_type),
-        portal_submission_ready=True,
-        reporting_guidelines=[
-            "Retain all original files without renaming or modifying to preserve cryptographic SHA-256 evidence integrity.",
-            "File an immediate formal complaint on the National Cybercrime Reporting Portal (cybercrime.gov.in).",
-            "If monetary fraud occurred, immediately call the National Cybercrime Helpline 1930 within the 'Golden Hour'.",
-            "Present this PromptShield Evidence Dossier and SHA-256 hash manifest to the investigating Cyber Crime Cell / Police Station."
-        ]
-    )
 
     return AnalyzeResponse(
         risk_level=risk_level,
         risk_score=risk_score,
-        scam_type=scam_type,
+        scam_type=str(llm_result.get("scam_type", "Digital Communication")),
         red_flags=formatted_red_flags,
         explanation=str(llm_result.get("explanation", "No explanation available.")),
         safe_next_steps=list(llm_result.get("safe_next_steps", [])),
         what_not_to_do=list(llm_result.get("what_not_to_do", [])),
         rule_findings=rule_findings,
-        engine_used=engine_name,
-        evidence_manifest=evidence_manifest,
-        dossier=dossier
+        engine_used=engine_name
     )

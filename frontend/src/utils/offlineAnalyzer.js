@@ -15,28 +15,11 @@ const SUSPICIOUS_TLDS = [
 
 const URL_PATTERN = /(?:https?:\/\/|www\.)[^\s<>"']+|[a-zA-Z0-9_\-\.]+\.(?:com|org|net|xyz|top|site|club|buzz|info|click|live|in|co|tech|online|store|vip|app|link|cc|icu|rest|work|bar|stream|to|is|pw|me)[^\s<>"']*/gi;
 
-export function analyzeMessageOffline(message, messageType = 'general', evidenceFiles = []) {
-  const textLower = (message || '').toLowerCase();
+export function analyzeMessageOffline(message, messageType = 'general') {
+  const textLower = message.toLowerCase();
   const redFlags = [];
   let score = 0;
   const scamTypes = [];
-
-  // Check uploaded visual / digital evidence files
-  let hasDangerousEvidence = false;
-  if (Array.isArray(evidenceFiles) && evidenceFiles.length > 0) {
-    evidenceFiles.forEach((ev) => {
-      const fn = (ev.filename || '').toLowerCase();
-      if (fn.endsWith('.apk') || fn.endsWith('.exe') || fn.endsWith('.scr') || fn.endsWith('.bat') || fn.endsWith('.vbs')) {
-        hasDangerousEvidence = true;
-        redFlags.push({
-          quote: ev.filename,
-          reason: `High Risk Malicious Executable (${ev.filename}): Uploaded evidence is an installer payload commonly used by cybercriminals to bypass Google Play security and hijack SMS OTPs or install keyloggers.`,
-        });
-        score += 60;
-        scamTypes.push('Malicious APK / Dropper Threat');
-      }
-    });
-  }
 
   // Helper to find exact substring in original text
   const findQuote = (target) => {
@@ -336,58 +319,6 @@ export function analyzeMessageOffline(message, messageType = 'general', evidence
     ];
   }
 
-  const itActSections = (() => {
-    const st = scamType.toLowerCase();
-    if (st.includes('upi') || st.includes('bank') || st.includes('phishing')) {
-      return [
-        'IT Act 2000 Section 66D - Cheating by personation using computer resource',
-        'IT Act 2000 Section 66C - Identity theft & unauthorized credential capture',
-        'Bharatiya Nyaya Sanhita (BNS) 2023 Section 318(4) - Cheating and inducing property transfer'
-      ];
-    } else if (st.includes('job') || st.includes('task') || st.includes('telegram')) {
-      return [
-        'IT Act 2000 Section 66D - Online employment cheating by personation',
-        'BNS 2023 Section 316 - Criminal breach of trust in recruitment fraud',
-        'BNS 2023 Section 318 - Deceptive inducement and job extortion'
-      ];
-    } else if (st.includes('piracy') || st.includes('ibomma') || st.includes('malware') || st.includes('apk')) {
-      return [
-        'IT Act 2000 Section 66 - Computer Related Offences (Malicious code injection)',
-        'IT Act 2000 Section 43 - Damage and unauthorized extraction from computer systems',
-        'Copyright Act 1957 Section 63/65A - Circumvention of technical measures and illicit movie streaming'
-      ];
-    } else if (st.includes('sextortion') || st.includes('blackmail') || st.includes('adult')) {
-      return [
-        'IT Act 2000 Section 67 / 67A - Transmission of obscene/sexually explicit material in electronic form',
-        'IT Act 2000 Section 66E - Violation of privacy rights',
-        'BNS 2023 Section 308 - Extortion by coercion or threat of injury'
-      ];
-    } else {
-      return [
-        'IT Act 2000 Section 66D - Digital personation and cyber fraud',
-        'BNS 2023 Section 318 - Cheating and digital dishonesty'
-      ];
-    }
-  })();
-
-  const dossier = {
-    dossier_id: `PS-CYBER-${Date.now()}`,
-    generated_at: new Date().toISOString(),
-    incident_type: scamType,
-    risk_score: score,
-    risk_level: riskLevel,
-    summary: `On-Device forensic evaluation classifying '${scamType}' at risk index ${score}/100 with ${evidenceFiles.length} cryptographic chain-of-custody artifacts.`,
-    evidence_manifest: evidenceFiles,
-    it_act_sections: itActSections,
-    portal_submission_ready: true,
-    reporting_guidelines: [
-      'Preserve all original evidence files with unmodified hashes for court admissibility.',
-      'Lodge a formal digital cyber report at https://cybercrime.gov.in.',
-      'For immediate banking freezes within the golden hour, dial 1930.',
-      'Submit this signed PromptShield Evidence Dossier directly to law enforcement.'
-    ]
-  };
-
   return {
     risk_level: riskLevel,
     risk_score: score,
@@ -398,7 +329,5 @@ export function analyzeMessageOffline(message, messageType = 'general', evidence
     what_not_to_do: whatNotToDo,
     rule_findings: [],
     engine_used: 'On-Device In-Browser Engine (100% Offline)',
-    evidence_manifest: evidenceFiles,
-    dossier,
   };
 }
