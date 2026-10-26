@@ -4,10 +4,11 @@ import { Search, ShieldAlert, AlertTriangle, ExternalLink, PhoneCall, ChevronDow
 const SCAM_TOPICS = [
   {
     id: 'phishing_kyc',
-    iconGradient: 'from-blue-500 to-indigo-600',
+    iconGradient: 'from-blue-500 via-indigo-600 to-cyan-500',
+    borderColor: 'border-blue-500/30',
     iconEmoji: '🏦',
     category: 'Banking & KYC Phishing',
-    title: 'Bank Account Suspension & KYC Phishing',
+    title: 'Bank Account Suspension & Fake KYC Updates',
     summary: 'SMS claiming your SBI/HDFC/ICICI NetBanking will be blocked in 24 hours unless you click a link to update PAN/Aadhaar.',
     tactics: [
       'Spoofed domain names (e.g. sbi-kyc-update.xyz or netbanking-verify.top)',
@@ -24,7 +25,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'job_task',
-    iconGradient: 'from-purple-500 to-pink-500',
+    iconGradient: 'from-purple-500 via-fuchsia-600 to-pink-500',
+    borderColor: 'border-purple-500/30',
     iconEmoji: '💼',
     category: 'Employment Scams',
     title: 'Work From Home & YouTube Task Frauds',
@@ -44,7 +46,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'upi_refund',
-    iconGradient: 'from-amber-500 to-orange-500',
+    iconGradient: 'from-amber-500 via-orange-500 to-yellow-400',
+    borderColor: 'border-amber-500/30',
     iconEmoji: '💳',
     category: 'UPI & Payment Frauds',
     title: 'The QR Code Inversion & Fake Refund Trap',
@@ -64,7 +67,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'delivery_smishing',
-    iconGradient: 'from-emerald-500 to-teal-500',
+    iconGradient: 'from-cyan-500 via-teal-500 to-emerald-400',
+    borderColor: 'border-cyan-500/30',
     iconEmoji: '📦',
     category: 'Courier & Smishing',
     title: 'India Post / Courier Redirection Fee Scam',
@@ -84,7 +88,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'lottery_advance_fee',
-    iconGradient: 'from-rose-500 to-red-600',
+    iconGradient: 'from-rose-500 via-pink-600 to-red-600',
+    borderColor: 'border-rose-500/30',
     iconEmoji: '🎁',
     category: 'Lottery & Sweepstakes',
     title: 'KBC & WhatsApp Lucky Draw Frauds',
@@ -104,7 +109,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'digital_arrest',
-    iconGradient: 'from-slate-600 to-slate-800',
+    iconGradient: 'from-indigo-600 via-purple-700 to-slate-800',
+    borderColor: 'border-indigo-500/30',
     iconEmoji: '⚖️',
     category: 'Law Enforcement Impersonation',
     title: 'Digital Arrest & CBI / Police Video Extortion',
@@ -136,28 +142,28 @@ export default function ScamAwareness() {
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
-      {/* Header (Apple Support Style) */}
-      <div className="rounded-3xl apple-glass-card p-6 sm:p-10 text-center relative overflow-hidden">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-semibold uppercase tracking-wider text-cyan-400 mb-3">
-          <Sparkles className="w-3.5 h-3.5" />
+      {/* Header */}
+      <div className="rounded-3xl apple-glass-card p-6 sm:p-10 text-center relative overflow-hidden border border-cyan-500/30 shadow-2xl">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 border border-white/20 text-xs font-bold uppercase tracking-wider text-cyan-300 mb-3.5 shadow-md">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
           <span>Security Knowledge Center</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
           Common Scam Blueprints
         </h1>
-        <p className="text-sm sm:text-base text-slate-300 mt-2 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base text-slate-300 mt-2.5 max-w-2xl mx-auto leading-relaxed font-medium">
           Comprehensive forensics on social engineering tactics targeting digital citizens. Learn how attackers orchestrate psychological traps and how to respond.
         </p>
 
-        {/* macOS Spotlight / iOS Style Search */}
+        {/* Search */}
         <div className="mt-8 max-w-xl mx-auto relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-cyan-300 absolute left-4 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search scams (e.g. UPI, KYC, Telegram, courier, digital arrest)..."
-            className="w-full pl-11 pr-4 py-3 rounded-full bg-black/50 border border-white/[0.12] text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/80 focus:ring-1 focus:ring-cyan-400/50 transition-all shadow-inner"
+            className="w-full pl-11 pr-4 py-3 rounded-full bg-black/60 border border-cyan-400/30 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
           />
         </div>
       </div>
@@ -171,8 +177,8 @@ export default function ScamAwareness() {
               key={topic.id}
               className={`rounded-3xl border transition-all duration-300 overflow-hidden ${
                 isExpanded
-                  ? 'apple-glass-card border-white/20 shadow-2xl'
-                  : 'bg-white/[0.02] hover:bg-white/[0.04] border-white/[0.07]'
+                  ? `apple-glass-card ${topic.borderColor} shadow-2xl`
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10'
               }`}
             >
               <button
@@ -180,48 +186,47 @@ export default function ScamAwareness() {
                 className="w-full p-5 sm:p-6 text-left flex items-start justify-between gap-4"
               >
                 <div className="flex items-start gap-4">
-                  {/* Apple iOS Settings-style squircle icon */}
-                  <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${topic.iconGradient} flex items-center justify-center text-xl shrink-0 shadow-lg shadow-black/40`}>
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${topic.iconGradient} flex items-center justify-center text-2xl shrink-0 shadow-lg shadow-black/50 border border-white/20`}>
                     {topic.iconEmoji}
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                    <span className="text-[10px] uppercase font-extrabold tracking-wider text-cyan-300 block mb-1">
                       {topic.category}
                     </span>
                     <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
                       {topic.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed font-normal">
                       {topic.summary}
                     </p>
                   </div>
                 </div>
 
-                <div className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0 text-slate-400 mt-1">
+                <div className="w-8 h-8 rounded-full bg-white/[0.08] flex items-center justify-center shrink-0 text-slate-300 mt-1">
                   {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-white/[0.08] space-y-4 text-xs sm:text-sm">
+                <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-white/10 space-y-4 text-xs sm:text-sm">
                   {/* Real World Example Card */}
-                  <div className="bg-black/40 p-4 rounded-2xl border border-white/[0.08]">
+                  <div className="bg-black/50 p-4 rounded-2xl border border-amber-500/30">
                     <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider block mb-1">
                       Real-World Lure Pattern
                     </span>
-                    <p className="font-mono text-xs text-amber-200/90 italic">
+                    <p className="font-mono text-xs text-amber-200 italic">
                       "{topic.example}"
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Tactics */}
-                    <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
-                      <h4 className="font-semibold text-rose-300 uppercase tracking-wider text-xs mb-2 flex items-center gap-1.5">
+                    <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/10">
+                      <h4 className="font-bold text-rose-300 uppercase tracking-wider text-xs mb-2 flex items-center gap-1.5">
                         <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
                         <span>Attacker Modus Operandi</span>
                       </h4>
-                      <ul className="space-y-1.5 list-disc list-inside text-slate-300 text-xs leading-relaxed">
+                      <ul className="space-y-1.5 list-disc list-inside text-slate-200 text-xs leading-relaxed">
                         {topic.tactics.map((tac, i) => (
                           <li key={i}>{tac}</li>
                         ))}
@@ -229,12 +234,12 @@ export default function ScamAwareness() {
                     </div>
 
                     {/* Red Flags */}
-                    <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
-                      <h4 className="font-semibold text-amber-300 uppercase tracking-wider text-xs mb-2 flex items-center gap-1.5">
+                    <div className="bg-white/[0.03] p-4 rounded-2xl border border-white/10">
+                      <h4 className="font-bold text-amber-300 uppercase tracking-wider text-xs mb-2 flex items-center gap-1.5">
                         <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
                         <span>Warning Signs (Red Flags)</span>
                       </h4>
-                      <ul className="space-y-1.5 list-disc list-inside text-slate-300 text-xs leading-relaxed">
+                      <ul className="space-y-1.5 list-disc list-inside text-slate-200 text-xs leading-relaxed">
                         {topic.redFlags.map((rf, i) => (
                           <li key={i}>{rf}</li>
                         ))}
@@ -243,11 +248,11 @@ export default function ScamAwareness() {
                   </div>
 
                   {/* Golden Rule Action */}
-                  <div className="bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-2xl text-emerald-200">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 block mb-0.5">
+                  <div className="bg-emerald-950/30 border border-emerald-500/40 p-4 rounded-2xl text-emerald-200">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300 block mb-0.5">
                       Defensive Protocol
                     </span>
-                    <p className="leading-relaxed">
+                    <p className="leading-relaxed font-medium">
                       {topic.safeAction}
                     </p>
                   </div>
