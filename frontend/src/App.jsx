@@ -23,6 +23,7 @@ import InteractiveViewer from './components/InteractiveViewer';
 import ActionChecklist from './components/ActionChecklist';
 import ScamAwareness from './components/ScamAwareness';
 import HistoryDrawer from './components/HistoryDrawer';
+import { analyzeMessageOffline } from './utils/offlineAnalyzer';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('analyzer'); // 'analyzer' | 'awareness'
@@ -230,25 +231,26 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Server returned error (${response.status})`);
+        throw new Error(`Server returned error (${response.status})`);
       }
 
       const data = await response.json();
       setAnalysisResult(data);
       saveToHistory(data, textToAnalyze, typeToUse);
-
+    } catch (networkOrServerError) {
+      console.warn('Backend/network unreachable. Running In-Browser On-Device Offline Engine:', networkOrServerError);
+      // Seamless offline fallback execution
+      const offlineData = analyzeMessageOffline(textToAnalyze, typeToUse);
+      setAnalysisResult(offlineData);
+      saveToHistory(offlineData, textToAnalyze, typeToUse);
+    } finally {
+      setIsLoading(false);
       setTimeout(() => {
         const resultElement = document.getElementById('analysis-results-section');
         if (resultElement) {
           resultElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
-    } catch (err) {
-      console.error('Analysis error:', err);
-      setError(err.message || 'Failed to connect to the analysis engine. Please verify the backend is running.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
