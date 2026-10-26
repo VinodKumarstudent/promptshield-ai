@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, Square, XCircle, ShieldCheck, AlertOctagon, PhoneCall, ExternalLink, FileText, Check } from 'lucide-react';
+import { CheckCircle2, Circle, XCircle, ShieldCheck, AlertOctagon, PhoneCall, ExternalLink, FileText, Check } from 'lucide-react';
 
 export default function ActionChecklist({ safeNextSteps = [], whatNotToDo = [], message, scamType, riskScore }) {
   const [completedSteps, setCompletedSteps] = useState({});
@@ -15,23 +15,21 @@ export default function ActionChecklist({ safeNextSteps = [], whatNotToDo = [], 
   const generateComplaintReport = () => {
     const text = `CYBER FRAUD INCIDENT REPORT (Generated via PromptShield AI)
 =============================================================
-Date & Time: ${new Date().toLocaleString()}
-Threat Classification: ${scamType || 'Suspicious Communication'}
-Assessed Risk Score: ${riskScore}/100
+Timestamp: ${new Date().toLocaleString()}
+Classification: ${scamType || 'Suspicious Communication'}
+Risk Index: ${riskScore}/100
 
 EVIDENCE / SUSPICIOUS MESSAGE:
 -------------------------------------------------------------
 ${message}
 
-RECOMMENDED ACTION LOG:
+ACTIONS LOG:
 - Immediate reporting to National Cybercrime Helpline 1930
-- Official portal submission at: https://cybercrime.gov.in
-- Suspicious sender number/handle blocked on recipient device
-- Financial institutions alerted if credentials or OTP were entered
+- Formal complaint portal: https://cybercrime.gov.in
+- Suspicious handle/sender blocked on device
 
 ADVISORY:
-AI guidance based on linguistic heuristics and pattern matching.
-Preserve screenshot evidence and SMS headers for law enforcement.`;
+AI security assessment for law enforcement intake.`;
 
     navigator.clipboard.writeText(text);
     setComplaintCopied(true);
@@ -40,18 +38,18 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* What to do next */}
-      <div className="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-5 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+      {/* What to do next (Apple Reminders Style) */}
+      <div className="rounded-3xl apple-glass-card p-6 sm:p-7 flex flex-col justify-between space-y-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
               <h3 className="text-sm font-bold uppercase tracking-wider text-emerald-400">
-                What To Do Next (Safe Action Checklist)
+                Safe Action Protocol
               </h3>
-              <p className="text-xs text-slate-400">Click steps to mark as completed</p>
+              <p className="text-xs text-slate-400">Recommended defensive actions</p>
             </div>
           </div>
 
@@ -62,20 +60,20 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
                 <div
                   key={idx}
                   onClick={() => toggleStep(idx)}
-                  className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                  className={`flex items-start gap-3 p-3.5 rounded-2xl transition-all duration-200 cursor-pointer border ${
                     isDone
-                      ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-200'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-200 hover:border-slate-700'
+                      ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300'
+                      : 'bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.08] text-slate-200'
                   }`}
                 >
-                  <button className="mt-0.5 text-emerald-400 shrink-0">
+                  <button className="mt-0.5 shrink-0 text-emerald-400">
                     {isDone ? (
-                      <CheckSquare className="w-4 h-4 text-emerald-400" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-500/20" />
                     ) : (
-                      <Square className="w-4 h-4 text-slate-500" />
+                      <Circle className="w-4 h-4 text-slate-500" />
                     )}
                   </button>
-                  <span className={`text-xs sm:text-sm leading-relaxed ${isDone ? 'line-through text-slate-400' : ''}`}>
+                  <span className={`text-xs sm:text-sm leading-relaxed ${isDone ? 'line-through text-slate-500' : ''}`}>
                     {step}
                   </span>
                 </div>
@@ -84,12 +82,12 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
           </div>
         </div>
 
-        {/* Official Reporting Quick Links */}
-        <div className="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap gap-2.5 items-center justify-between">
+        {/* Action Buttons: 1930 & Portal Complaint */}
+        <div className="pt-4 border-t border-white/[0.08] flex flex-wrap gap-2.5 items-center justify-between">
           <div className="flex items-center gap-2">
             <a
               href="tel:1930"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold hover:bg-emerald-500/30 transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold hover:bg-emerald-500/30 transition"
             >
               <PhoneCall className="w-3.5 h-3.5" />
               <span>Call Helpline 1930</span>
@@ -98,7 +96,7 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
               href="https://cybercrime.gov.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold hover:bg-blue-500/30 transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 hover:text-white border border-white/[0.08] text-xs font-semibold transition"
             >
               <span>cybercrime.gov.in</span>
               <ExternalLink className="w-3 h-3" />
@@ -107,36 +105,36 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
 
           <button
             onClick={generateComplaintReport}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-xs font-medium hover:bg-slate-750 hover:text-white transition"
-            title="Copies formatted incident report to paste into the police or cybercrime portal"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 border border-white/[0.1] text-xs font-medium transition"
+            title="Copy pre-formatted complaint text ready for police portal"
           >
             {complaintCopied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">Report Copied!</span>
+                <span className="text-emerald-400 font-semibold">Report Copied</span>
               </>
             ) : (
               <>
                 <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Copy Portal Complaint Report</span>
+                <span>Copy Incident Report</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* What NOT to do */}
-      <div className="bg-slate-900/80 border border-rose-500/30 rounded-2xl p-5 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+      {/* What NOT to do (Critical Warnings) */}
+      <div className="rounded-3xl apple-glass-card p-6 sm:p-7 flex flex-col justify-between space-y-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center">
               <AlertOctagon className="w-4 h-4 text-rose-400" />
             </div>
             <div>
               <h3 className="text-sm font-bold uppercase tracking-wider text-rose-400">
-                What NOT To Do (Critical Warning Checklist)
+                Critical Hazards (What NOT To Do)
               </h3>
-              <p className="text-xs text-slate-400">Avoid these actions to prevent financial loss</p>
+              <p className="text-xs text-slate-400">Avoid these irreversible actions</p>
             </div>
           </div>
 
@@ -144,7 +142,7 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
             {whatNotToDo.map((warning, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 p-3 rounded-xl border bg-rose-950/20 border-rose-900/40 text-rose-200"
+                className="flex items-start gap-3 p-3.5 rounded-2xl border bg-rose-950/20 border-rose-900/40 text-rose-200"
               >
                 <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                 <span className="text-xs sm:text-sm leading-relaxed">
@@ -155,9 +153,9 @@ Preserve screenshot evidence and SMS headers for law enforcement.`;
           </div>
         </div>
 
-        <div className="mt-5 pt-4 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
+        <div className="pt-4 border-t border-white/[0.08] text-[11px] text-slate-400 flex items-center gap-2">
           <AlertOctagon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span>If you entered banking details or UPI PINs, contact your bank immediately to block internet banking and freeze cards.</span>
+          <span>If you entered payment PINs or shared OTPs, immediately contact your bank to freeze netbanking.</span>
         </div>
       </div>
     </div>

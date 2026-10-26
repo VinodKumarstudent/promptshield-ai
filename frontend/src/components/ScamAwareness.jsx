@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Search, ShieldAlert, AlertTriangle, HelpCircle, ExternalLink, PhoneCall, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { Search, ShieldAlert, AlertTriangle, ExternalLink, PhoneCall, ChevronDown, ChevronUp, Lock, Sparkles } from 'lucide-react';
 
 const SCAM_TOPICS = [
   {
     id: 'phishing_kyc',
+    iconGradient: 'from-blue-500 to-indigo-600',
+    iconEmoji: '🏦',
     category: 'Banking & KYC Phishing',
-    title: 'Fake Bank Account Suspension & KYC Expiry',
+    title: 'Bank Account Suspension & KYC Phishing',
     summary: 'SMS claiming your SBI/HDFC/ICICI NetBanking will be blocked in 24 hours unless you click a link to update PAN/Aadhaar.',
     tactics: [
       'Spoofed domain names (e.g. sbi-kyc-update.xyz or netbanking-verify.top)',
@@ -22,8 +24,10 @@ const SCAM_TOPICS = [
   },
   {
     id: 'job_task',
+    iconGradient: 'from-purple-500 to-pink-500',
+    iconEmoji: '💼',
     category: 'Employment Scams',
-    title: 'Part-Time Work From Home & YouTube Like Task Scams',
+    title: 'Work From Home & YouTube Task Frauds',
     summary: 'WhatsApp/Telegram message offering Rs 3,000 - Rs 8,000 per day for liking YouTube videos or writing Google Reviews.',
     tactics: [
       'Impersonation of Amazon HR, Meesho, or international marketing firms',
@@ -40,8 +44,10 @@ const SCAM_TOPICS = [
   },
   {
     id: 'upi_refund',
+    iconGradient: 'from-amber-500 to-orange-500',
+    iconEmoji: '💳',
     category: 'UPI & Payment Frauds',
-    title: 'Fake Refunds & The QR Code Trap',
+    title: 'The QR Code Inversion & Fake Refund Trap',
     summary: 'Scammers claim to send you a refund, cashback, or OLX buyer payment by asking you to scan a QR code and enter your UPI PIN.',
     tactics: [
       'QR Code Inversion: Exploiting confusion between sending and receiving money',
@@ -58,6 +64,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'delivery_smishing',
+    iconGradient: 'from-emerald-500 to-teal-500',
+    iconEmoji: '📦',
     category: 'Courier & Smishing',
     title: 'India Post / Courier Redirection Fee Scam',
     summary: 'SMS claiming a package cannot be delivered due to an incorrect address and asks for a token ₹48 redelivery charge.',
@@ -76,6 +84,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'lottery_advance_fee',
+    iconGradient: 'from-rose-500 to-red-600',
+    iconEmoji: '🎁',
     category: 'Lottery & Sweepstakes',
     title: 'KBC & WhatsApp Lucky Draw Frauds',
     summary: 'Messages or audio recordings announcing a multi-lakh lottery prize and requiring upfront "customs tax" or "file processing" fees.',
@@ -94,8 +104,10 @@ const SCAM_TOPICS = [
   },
   {
     id: 'digital_arrest',
+    iconGradient: 'from-slate-600 to-slate-800',
+    iconEmoji: '⚖️',
     category: 'Law Enforcement Impersonation',
-    title: 'Digital Arrest & CBI / Police Video Call Extortion',
+    title: 'Digital Arrest & CBI / Police Video Extortion',
     summary: 'Calls claiming your phone or Aadhaar is linked to illegal narcotics or money laundering and putting you under "digital arrest".',
     tactics: [
       'Impersonating CBI, NCB, Cyber Police, or Mumbai Police',
@@ -123,90 +135,79 @@ export default function ScamAwareness() {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40 border border-blue-500/30 rounded-2xl p-6 sm:p-8 backdrop-blur-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">
-              Citizen Digital Defense
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-2 tracking-tight">
-              Scam Awareness Knowledge Base
-            </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Equip yourself against the most prevalent social engineering schemes targeting citizens across India and globally.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <a
-              href="https://cybercrime.gov.in"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition shadow-lg shadow-blue-600/30"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span>National Cybercrime Portal</span>
-            </a>
-          </div>
+    <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Header (Apple Support Style) */}
+      <div className="rounded-3xl apple-glass-card p-6 sm:p-10 text-center relative overflow-hidden">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs font-semibold uppercase tracking-wider text-cyan-400 mb-3">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Security Knowledge Center</span>
         </div>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+          Common Scam Blueprints
+        </h1>
+        <p className="text-sm sm:text-base text-slate-300 mt-2 max-w-2xl mx-auto leading-relaxed">
+          Comprehensive forensics on social engineering tactics targeting digital citizens. Learn how attackers orchestrate psychological traps and how to respond.
+        </p>
 
-        {/* Search */}
-        <div className="mt-6 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        {/* macOS Spotlight / iOS Style Search */}
+        <div className="mt-8 max-w-xl mx-auto relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search scam types (e.g. UPI, KYC, Telegram job, courier, digital arrest)..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700/80 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+            placeholder="Search scams (e.g. UPI, KYC, Telegram, courier, digital arrest)..."
+            className="w-full pl-11 pr-4 py-3 rounded-full bg-black/50 border border-white/[0.12] text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/80 focus:ring-1 focus:ring-cyan-400/50 transition-all shadow-inner"
           />
         </div>
       </div>
 
-      {/* Scam Topics List */}
+      {/* Topics Accordion */}
       <div className="space-y-4">
         {filteredTopics.map((topic) => {
           const isExpanded = expandedId === topic.id;
           return (
             <div
               key={topic.id}
-              className={`rounded-2xl border transition-all ${
+              className={`rounded-3xl border transition-all duration-300 overflow-hidden ${
                 isExpanded
-                  ? 'bg-slate-900/90 border-blue-500/40 shadow-lg shadow-blue-500/5'
-                  : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                  ? 'apple-glass-card border-white/20 shadow-2xl'
+                  : 'bg-white/[0.02] hover:bg-white/[0.04] border-white/[0.07]'
               }`}
             >
               <button
                 onClick={() => setExpandedId(isExpanded ? null : topic.id)}
-                className="w-full p-5 text-left flex items-start justify-between gap-4"
+                className="w-full p-5 sm:p-6 text-left flex items-start justify-between gap-4"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-500/10 text-cyan-400 border border-blue-500/20">
+                <div className="flex items-start gap-4">
+                  {/* Apple iOS Settings-style squircle icon */}
+                  <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${topic.iconGradient} flex items-center justify-center text-xl shrink-0 shadow-lg shadow-black/40`}>
+                    {topic.iconEmoji}
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
                       {topic.category}
                     </span>
+                    <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                      {topic.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
+                      {topic.summary}
+                    </p>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                    {topic.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1 leading-relaxed">
-                    {topic.summary}
-                  </p>
                 </div>
 
-                <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-slate-400">
+                <div className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0 text-slate-400 mt-1">
                   {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </div>
               </button>
 
               {isExpanded && (
-                <div className="px-5 pb-5 pt-2 border-t border-slate-800/80 space-y-4 text-xs sm:text-sm">
-                  {/* Real World Example */}
-                  <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+                <div className="px-5 sm:px-6 pb-6 pt-2 border-t border-white/[0.08] space-y-4 text-xs sm:text-sm">
+                  {/* Real World Example Card */}
+                  <div className="bg-black/40 p-4 rounded-2xl border border-white/[0.08]">
                     <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider block mb-1">
-                      Real-World Lure Example
+                      Real-World Lure Pattern
                     </span>
                     <p className="font-mono text-xs text-amber-200/90 italic">
                       "{topic.example}"
@@ -215,12 +216,12 @@ export default function ScamAwareness() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Tactics */}
-                    <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+                    <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
                       <h4 className="font-semibold text-rose-300 uppercase tracking-wider text-xs mb-2 flex items-center gap-1.5">
                         <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
                         <span>Attacker Modus Operandi</span>
                       </h4>
-                      <ul className="space-y-1.5 list-disc list-inside text-slate-300 text-xs">
+                      <ul className="space-y-1.5 list-disc list-inside text-slate-300 text-xs leading-relaxed">
                         {topic.tactics.map((tac, i) => (
                           <li key={i}>{tac}</li>
                         ))}
@@ -228,12 +229,12 @@ export default function ScamAwareness() {
                     </div>
 
                     {/* Red Flags */}
-                    <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800/80">
+                    <div className="bg-white/[0.02] p-4 rounded-2xl border border-white/[0.06]">
                       <h4 className="font-semibold text-amber-300 uppercase tracking-wider text-xs mb-2 flex items-center gap-1.5">
                         <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
                         <span>Warning Signs (Red Flags)</span>
                       </h4>
-                      <ul className="space-y-1.5 list-disc list-inside text-slate-300 text-xs">
+                      <ul className="space-y-1.5 list-disc list-inside text-slate-300 text-xs leading-relaxed">
                         {topic.redFlags.map((rf, i) => (
                           <li key={i}>{rf}</li>
                         ))}
@@ -242,9 +243,9 @@ export default function ScamAwareness() {
                   </div>
 
                   {/* Golden Rule Action */}
-                  <div className="bg-emerald-950/20 border border-emerald-500/30 p-3.5 rounded-xl text-emerald-200">
+                  <div className="bg-emerald-950/20 border border-emerald-500/30 p-4 rounded-2xl text-emerald-200">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 block mb-0.5">
-                      Recommended Defensive Protocol
+                      Defensive Protocol
                     </span>
                     <p className="leading-relaxed">
                       {topic.safeAction}
@@ -255,25 +256,6 @@ export default function ScamAwareness() {
             </div>
           );
         })}
-      </div>
-
-      {/* Emergency Resources Banner */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h4 className="font-bold text-white text-sm">Targeted by a cyber scammer? Act within the Golden Hour!</h4>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Call national helpline 1930 immediately to freeze financial transactions before scammers siphon funds.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <a
-            href="tel:1930"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition"
-          >
-            <PhoneCall className="w-4 h-4" />
-            <span>Call 1930 (Toll Free)</span>
-          </a>
-        </div>
       </div>
     </div>
   );

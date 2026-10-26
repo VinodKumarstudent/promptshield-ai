@@ -1,83 +1,83 @@
 import React from 'react';
-import { Shield, ShieldAlert, PhoneCall, History, BookOpen, Search, ExternalLink } from 'lucide-react';
+import { Shield, Sparkles, BookOpen, Search, History, PhoneCall, ExternalLink } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, historyCount, onOpenHistory }) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand */}
+    <header className="sticky top-0 z-50 w-full pt-3 px-4 sm:px-6 pointer-events-none">
+      <div className="max-w-6xl mx-auto h-14 rounded-full apple-glass px-4 sm:px-6 flex items-center justify-between pointer-events-auto transition-all shadow-2xl">
+        {/* Apple Squircle Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 p-0.5 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Shield className="w-5 h-5 text-cyan-400" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 p-[1.5px] shadow-lg shadow-purple-500/20 flex items-center justify-center">
+            <div className="w-full h-full bg-black rounded-[10px] flex items-center justify-center">
+              <Shield className="w-4 h-4 text-cyan-300" />
             </div>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg sm:text-xl tracking-tight text-white">PromptShield</span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-cyan-400 border border-blue-500/20">
-                GenAI Safety
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 hidden sm:block">Explainable AI for Scam Detection & Digital Safety</p>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm sm:text-base tracking-tight text-white">
+              PromptShield
+            </span>
+            <span className="hidden md:inline-flex items-center gap-1 text-[10px] uppercase font-semibold tracking-wider px-2 py-0.5 rounded-full bg-white/[0.06] text-slate-400 border border-white/[0.08]">
+              <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+              Intelligence
+            </span>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1 sm:gap-2 bg-slate-900/90 border border-slate-800 p-1 rounded-xl">
+        {/* Apple Segmented Switcher */}
+        <div className="flex items-center p-1 rounded-full bg-black/40 border border-white/[0.08] shadow-inner">
           <button
             onClick={() => setActiveTab('analyzer')}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
               activeTab === 'analyzer'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-white/15 text-white shadow-md shadow-white/5 border border-white/20'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Search className="w-4 h-4" />
-            <span>Analyzer</span>
+            <Search className="w-3.5 h-3.5" />
+            <span>Inspector</span>
           </button>
           <button
             onClick={() => setActiveTab('awareness')}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${
               activeTab === 'awareness'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-white/15 text-white shadow-md shadow-white/5 border border-white/20'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <BookOpen className="w-4 h-4" />
-            <span>Scam Awareness</span>
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Security Library</span>
           </button>
         </div>
 
-        {/* Actions */}
+        {/* Right Actions: History & Emergency SOS */}
         <div className="flex items-center gap-2">
-          {/* History button */}
+          {/* History Pill */}
           <button
             onClick={onOpenHistory}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-300 hover:text-white hover:border-slate-700 transition text-xs sm:text-sm font-medium relative"
-            title="Local Analysis History"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-slate-300 hover:text-white transition text-xs font-medium"
+            title="Stored locally on this device"
           >
-            <History className="w-4 h-4 text-slate-400" />
-            <span className="hidden md:inline">History</span>
+            <History className="w-3.5 h-3.5 text-slate-400" />
+            <span className="hidden sm:inline">History</span>
             {historyCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-blue-500/80 text-white text-[9px] font-bold flex items-center justify-center">
                 {historyCount}
               </span>
             )}
           </button>
 
-          {/* Cybercrime 1930 Helpline */}
+          {/* Emergency SOS Helpline 1930 */}
           <a
             href="https://cybercrime.gov.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition text-xs sm:text-sm font-medium"
-            title="Official National Cybercrime Reporting Portal"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 transition text-xs font-semibold"
+            title="National Cybercrime Emergency Helpline 1930 / cybercrime.gov.in"
           >
-            <PhoneCall className="w-3.5 h-3.5 animate-pulse text-red-400" />
-            <span className="font-semibold">1930</span>
-            <span className="hidden lg:inline text-xs opacity-80">(cybercrime.gov.in)</span>
-            <ExternalLink className="w-3 h-3 opacity-60 hidden sm:inline" />
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <PhoneCall className="w-3 h-3 text-rose-400" />
+            <span>1930</span>
+            <ExternalLink className="w-2.5 h-2.5 opacity-60 hidden md:inline" />
           </a>
         </div>
       </div>
