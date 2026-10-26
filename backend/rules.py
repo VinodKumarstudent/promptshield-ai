@@ -24,7 +24,8 @@ SUSPICIOUS_TLDS = [
 LOOKALIKE_BRANDS = [
     r"sbi[-_.]?kyc", r"hdfc[-_.]?net", r"icici[-_.]?secure", r"paytm[-_.]?verify",
     r"paypa[l1]", r"amaz[o0]n", r"netfl[i1]x", r"apple[-_.]?id", r"ind[a-z]*post",
-    r"fedex[-_.]?track", r"dhl[-_.]?express", r"income[-_.]?tax", r"gov[-_.]?refund"
+    r"fedex[-_.]?track", r"dhl[-_.]?express", r"income[-_.]?tax", r"gov[-_.]?refund",
+    r"echallan[-_.]?parivahan", r"jio[-_.]?5g", r"electricity[-_.]?bill"
 ]
 
 # Piracy / Prohibited illegal streaming platforms (e.g. iBomma, MovieRulz)
@@ -44,7 +45,47 @@ ADULT_SEXTORTION_PATTERNS = [
 
 # Malicious APK droppers & unverified app installation
 APK_DROPPER_PATTERNS = [
-    r"\b(?:download\s+apk|install\s+apk|download\s+mod\s+apk|\.apk\b|install\s+player\s+app|whatsapp\s+pink|free\s+netflix\s+apk)\b"
+    r"\b(?:download\s+apk|install\s+apk|download\s+mod\s+apk|\.apk\b|install\s+player\s+app|whatsapp\s+pink|free\s+netflix\s+apk|download\s+loan\s+apk|echallan\.apk)\b"
+]
+
+# Digital Arrest & Law Enforcement Impersonation Extortion
+DIGITAL_ARREST_PATTERNS = [
+    r"\b(?:digital\s+arrest|cbi\s+officer|mumbai\s+crime\s+branch|narcotics\s+control\s+bureau|ncb\s+officer)\b",
+    r"\b(?:parcel\s+containing\s+(?:drugs|narcotics|mdma|passports|contraband))\b",
+    r"\b(?:arrest\s+warrant\s+(?:issued|pending)|stay\s+on\s+(?:skype|video\s+call)\s+for\s+(?:statement|investigation))\b",
+    r"\b(?:transfer\s+(?:funds|money)\s+to\s+rbi\s+verification\s+account|prove\s+your\s+innocence)\b"
+]
+
+# Electricity / Utility Power Disconnection Scam
+ELECTRICITY_DISCONNECTION_PATTERNS = [
+    r"\b(?:electricity\s+power\s+will\s+be\s+disconnected\s+(?:tonight|today|at\s+\d+))\b",
+    r"\b(?:power\s+supply\s+will\s+be\s+(?:disconnected|blocked|cut\s+off))\b",
+    r"\b(?:previous\s+month\s+bill\s+was\s+not\s+updated|contact\s+our\s+electricity\s+officer)\b"
+]
+
+# Credit Card Reward Points / Cashback Phishing
+REWARD_POINTS_PATTERNS = [
+    r"\b(?:credit\s+card\s+(?:reward\s+)?points?\s+(?:worth\s+rs\.?\s*\d+|expir(?:e|ing)\s+today))\b",
+    r"\b(?:redeem\s+(?:your\s+)?(?:reward\s+)?points?\s+(?:into|as)\s+cash)\b",
+    r"\b(?:sbi\s+card\s+points|hdfc\s+reward\s+points)\b"
+]
+
+# Traffic E-Challan Fake Penalty APK
+ECHALLAN_PATTERNS = [
+    r"\b(?:traffic\s+violation\s+(?:fine|challan)|unpaid\s+traffic\s+challan|e-challan\s+notice)\b",
+    r"\b(?:download\s+(?:parivahan|echallan)\.apk|license\s+will\s+be\s+seized)\b"
+]
+
+# Income Tax Refund Phishing
+TAX_REFUND_PATTERNS = [
+    r"\b(?:income\s+tax\s+refund\s+of\s+rs\.?\s*[\d,]+|tax\s+refund\s+has\s+been\s+approved)\b",
+    r"\b(?:submit\s+your\s+bank\s+account\s+details\s+to\s+claim\s+refund)\b"
+]
+
+# SIM Deactivation / 5G e-SIM KYC Scam
+SIM_BLOCK_PATTERNS = [
+    r"\b(?:sim\s+(?:card\s+)?(?:will\s+be\s+)?(?:deactivated|blocked|disconnected)\s+today)\b",
+    r"\b(?:5g\s+(?:sim|upgrade|esim)\s+kyc\s+pending)\b"
 ]
 
 # Urgency / Pressure keywords and phrases
@@ -57,20 +98,17 @@ URGENCY_PATTERNS = [
     r"\b(?:act\s+(?:now|immediately|fast))\b",
     r"\b(?:expires?\s+today)\b",
     r"\b(?:urgent\s+attention|urgent\s+action)\b",
-    r"\b(?:arrest\s+warrant|police\s+case|legal\s+notice|court\s+summons|digital\s+arrest)\b",
-    r"\b(?:electricity\s+power\s+will\s+be\s+disconnected)\b",
     r"\b(?:kyc\s+expired|pending\s+kyc|pan\s+card\s+blocked)\b"
 ]
 
-# OTP / Credentials / Sensitive payment requests
+# OTP / Credentials / Sensitive payment requests (Harm Vector: Asking user to share/provide/pay)
 CREDENTIAL_PATTERNS = [
-    r"\b(?:share|send|enter|verify|provide)\s+(?:your\s+)?(?:otp|one\s*time\s*password|pin|mpin|cvv|password)\b",
-    r"\b(?:otp\s+is\s+\d{4,8})\b",
-    r"\b(?:debit\s+card|credit\s+card|atm\s+card|cvv)\b",
+    r"\b(?:share|send|provide)\s+(?:your\s+)?(?:otp|one\s*time\s*password|pin|mpin|cvv|password)\b",
+    r"\b(?:share\s+your\s+otp\s+with|except\s+our\s+verified\s+executive)\b",
+    r"\b(?:debit\s+card\s+(?:number|details)|credit\s+card\s+(?:number|details)|cvv)\b",
     r"\b(?:scan\s+(?:this\s+)?qr\s*(?:code)?\s+to\s+(?:receive|accept|credit))\b",
-    r"\b(?:transfer\s+to\s+upi|upi\s+pin|enter\s+your\s+upi\s+pin)\b",
+    r"\b(?:enter\s+(?:your\s+)?upi\s*pin\s+to\s+(?:receive|credit|accept))\b",
     r"\b(?:(?:refundable\s+)?(?:processing|customs|registration|security|tax|redelivery)\s+(?:fee|charge|deposit))\b",
-    r"\b(?:pay\s+(?:rs\.?|inr|\$|usd|euro|£)\s*\d+)\b",
     r"\b(?:transfer\s+(?:the\s+)?(?:refundable|processing|tax)\s+fee)\b",
     r"\b(?:gift\s+cards?|crypto|usdt|bitcoin)\b"
 ]
@@ -93,6 +131,19 @@ AUTHORITY_PATTERNS = [
     r"\b(?:income\s+tax\s+department|it\s+department|cbi|ncb|mha|cyber\s+crime\s+cell|interpol)\b",
     r"\b(?:india\s+post|speed\s+post|fedex|dhl|bluedart|amazon\s+hr|amazon\s+recruiter|phonepe|googlepay)\b",
     r"\b(?:netflix\s+support|apple\s+security|microsoft\s+support|google\s+security\s+team)\b"
+]
+
+# Genuine Security & Transaction Patterns (Zero False Alarms)
+GENUINE_SECURITY_PATTERNS = [
+    r"\b(?:never\s+share\s+(?:this\s+)?otp|do\s+not\s+share\s+otp|bank\s+never\s+asks\s+for\s+otp|strictly\s+confidential)\b",
+    r"\b(?:if\s+not\s+(?:requested|initiated)\s+by\s+you|call\s+customer\s+care\s+immediately)\b",
+    r"\b(?:valid\s+for\s+\d+\s*(?:minutes?|mins?))\b",
+    r"\b(?:for\s+(?:your\s+)?transaction\s+of\s+(?:rs\.?|inr))\b",
+    r"\b(?:spent\s+on\s+your\s+card|debited\s+from\s+a\/c|credited\s+to\s+your\s+a\/c|available\s+balance)\b",
+    r"\b(?:pnr\s+(?:no\.?|number)?\s*:?\s*\d{10}|coach\s+[a-z]\d+|seat\s+confirmed)\b",
+    r"\b(?:track\s+your\s+(?:package|order|shipment)\s+in\s+(?:the\s+)?official\s+app)\b",
+    r"\b(?:your\s+ride\s+is\s+arriving|driver\s+(?:name|details)?\s*:?\s*[a-z]+|otp\s+to\s+start\s+ride)\b",
+    r"\b(?:bill\s+payment\s+of\s+rs\.?\s*[\d,]+\s*(?:received|successful)|thank\s+you\s+for\s+paying\s+your\s+bill)\b"
 ]
 
 
@@ -151,7 +202,59 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=lookalike_urls
         ))
 
-    # 2. Piracy & Illicit Media Links (iBomma, torrents, etc.)
+    # 2. Digital Arrest & Law Enforcement Extortion
+    da_matches = []
+    for pattern in DIGITAL_ARREST_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            da_matches.append(match.group(0))
+    if da_matches:
+        findings.append(RuleFinding(
+            category="Digital Arrest & Law Enforcement Extortion",
+            severity="high",
+            description="Fabricated allegations of drug trafficking or digital arrest to intimidate victim into transferring funds.",
+            matched_phrases=list(dict.fromkeys(da_matches))
+        ))
+
+    # 3. Electricity Disconnection Scam
+    elec_matches = []
+    for pattern in ELECTRICITY_DISCONNECTION_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            elec_matches.append(match.group(0))
+    if elec_matches:
+        findings.append(RuleFinding(
+            category="Electricity Disconnection Fraud",
+            severity="high",
+            description="Threat of imminent electricity shutoff to trick victim into calling unverified phone numbers or installing APKs.",
+            matched_phrases=list(dict.fromkeys(elec_matches))
+        ))
+
+    # 4. Credit Card Reward Points Phishing
+    pts_matches = []
+    for pattern in REWARD_POINTS_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            pts_matches.append(match.group(0))
+    if pts_matches:
+        findings.append(RuleFinding(
+            category="Credit Card Points Trap",
+            severity="high",
+            description="Fabricated reward points expiration lure designed to harvest full card numbers, CVVs, and NetBanking passwords.",
+            matched_phrases=list(dict.fromkeys(pts_matches))
+        ))
+
+    # 5. Traffic E-Challan APK
+    challan_matches = []
+    for pattern in ECHALLAN_PATTERNS:
+        for match in re.finditer(pattern, text_lower):
+            challan_matches.append(match.group(0))
+    if challan_matches:
+        findings.append(RuleFinding(
+            category="Traffic E-Challan Fake Penalty",
+            severity="high",
+            description="False traffic violation fine instructing recipient to download a malicious APK file.",
+            matched_phrases=list(dict.fromkeys(challan_matches))
+        ))
+
+    # 6. Piracy & Illicit Media Links (iBomma, torrents, etc.)
     piracy_matches = list(piracy_urls)
     for pattern in PIRACY_DOMAINS_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -164,7 +267,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(piracy_matches))
         ))
 
-    # 3. Prohibited Adult Content & Sextortion Extortion
+    # 7. Prohibited Adult Content & Sextortion Extortion
     adult_matches = list(adult_urls)
     for pattern in ADULT_SEXTORTION_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -177,7 +280,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(adult_matches))
         ))
 
-    # 4. Untrusted APK Droppers
+    # 8. Untrusted APK Droppers
     apk_matches = []
     for pattern in APK_DROPPER_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -190,7 +293,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(apk_matches))
         ))
 
-    # 5. Urgency and Pressure language
+    # 9. Urgency and Pressure language
     urgency_matches = []
     for pattern in URGENCY_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -198,12 +301,12 @@ def analyze_rules(message: str) -> List[RuleFinding]:
     if urgency_matches:
         findings.append(RuleFinding(
             category="Urgency & Pressure Language",
-            severity="high",
+            severity="medium",
             description="Threatening or artificial urgency used to panic the recipient into acting without verifying.",
             matched_phrases=list(dict.fromkeys(urgency_matches))
         ))
 
-    # 6. Request for OTP / Passwords / Money
+    # 10. Request for OTP / Passwords / Money
     cred_matches = []
     for pattern in CREDENTIAL_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -216,7 +319,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(cred_matches))
         ))
 
-    # 7. Too-Good-To-Be-True / Lottery / Job Offers
+    # 11. Too-Good-To-Be-True / Lottery / Job Offers
     offer_matches = []
     for pattern in TOO_GOOD_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -229,7 +332,7 @@ def analyze_rules(message: str) -> List[RuleFinding]:
             matched_phrases=list(dict.fromkeys(offer_matches))
         ))
 
-    # 8. Authority & Sender Impersonation
+    # 12. Authority & Sender Impersonation
     auth_matches = []
     for pattern in AUTHORITY_PATTERNS:
         for match in re.finditer(pattern, text_lower):
@@ -237,19 +340,9 @@ def analyze_rules(message: str) -> List[RuleFinding]:
     if auth_matches:
         findings.append(RuleFinding(
             category="Institutional Impersonation Claim",
-            severity="medium",
+            severity="low",
             description="Claims to represent reputable banks, couriers, e-commerce, or government agencies.",
             matched_phrases=list(dict.fromkeys(auth_matches))
-        ))
-
-    # 9. Poor Grammar, ALL CAPS, Excessive Punctuation
-    punctuation_matches = re.findall(r'!{2,}|\?{2,}|[!A-Z\s]{15,}', message)
-    if punctuation_matches:
-        findings.append(RuleFinding(
-            category="Irregular Formatting & Aggressive Punctuation",
-            severity="low",
-            description="Unprofessional formatting, excessive punctuation, or aggressive casing typical of spam campaigns.",
-            matched_phrases=[p.strip() for p in punctuation_matches if len(p.strip()) > 1][:3]
         ))
 
     return findings

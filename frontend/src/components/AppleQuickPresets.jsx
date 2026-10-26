@@ -74,9 +74,12 @@ export default function AppleQuickPresets({ samples, onSelectSample, activeSampl
   const getPresetEmoji = (id, type, isSafe) => {
     if (id === 'ibomma_piracy_malware') return '🎬';
     if (id === 'sextortion_blackmail') return '🔞';
+    if (id === 'digital_arrest') return '⚖️';
+    if (id === 'electricity_bill_scam') return '⚡️';
+    if (id === 'genuine_personal_chat') return '💬';
     if (isSafe) return id.includes('otp') ? '🔑' : '🛍️';
     switch (type) {
-      case 'email': return '⚡️';
+      case 'email': return '📧';
       case 'job_offer': return '💼';
       case 'payment_upi': return '💳';
       case 'lottery': return '🎁';
@@ -88,14 +91,17 @@ export default function AppleQuickPresets({ samples, onSelectSample, activeSampl
   const getShortTitle = (id) => {
     switch (id) {
       case 'phishing_email': return 'Bank KYC Phishing';
+      case 'digital_arrest': return 'Digital Arrest Scam';
+      case 'electricity_bill_scam': return 'Power Disconnect Scam';
       case 'fake_job_offer': return 'Amazon Task Job';
       case 'upi_otp_sms': return 'UPI Refund QR Trap';
       case 'lottery_scam': return 'KBC WhatsApp Lottery';
       case 'delivery_fee_scam': return 'India Post Redelivery';
-      case 'ibomma_piracy_malware': return 'iBomma Piracy / APK Trap';
+      case 'ibomma_piracy_malware': return 'iBomma Piracy / APK';
       case 'sextortion_blackmail': return 'Adult Site / Blackmail';
       case 'genuine_order_confirmation': return 'Amazon Order Verified';
       case 'genuine_bank_otp': return 'HDFC Official OTP';
+      case 'genuine_personal_chat': return 'Personal Chat (Safe)';
       default: return 'Sample Scenario';
     }
   };

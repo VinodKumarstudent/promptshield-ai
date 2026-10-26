@@ -47,6 +47,24 @@ export default function App() {
       description: 'Classic urgent bank suspension phishing with a fake domain imitating State Bank of India.'
     },
     {
+      id: 'digital_arrest',
+      category: 'Law Enforcement Scam',
+      title: 'Digital Arrest / Police Extortion',
+      type: 'sms',
+      text: 'This is Mumbai Crime Branch. An international parcel #IND-9028 booked with your Aadhaar card has been seized at Mumbai Airport containing 5 fake passports and 140 grams of MDMA narcotics. Digital arrest warrant issued. Connect immediately on Skype with CBI officer or local police will arrive at your residence.',
+      expected_risk: 'likely_scam',
+      description: 'Severe digital arrest intimidation extortion coercing victim onto Skype video interrogation.'
+    },
+    {
+      id: 'electricity_bill_scam',
+      category: 'Utility Disconnection',
+      title: 'Electricity Power Disconnect Scam',
+      type: 'sms',
+      text: 'Dear consumer, your electricity power will be disconnected tonight at 9:30 PM from electricity office because your previous month bill was not updated. Please immediately contact our electricity officer Mr. Sharma on 9876543210.',
+      expected_risk: 'likely_scam',
+      description: 'Widespread utility shutoff scare trap directing victim to call an unverified 10-digit mobile number.'
+    },
+    {
       id: 'fake_job_offer',
       category: 'Fake Job Offer',
       title: 'Telegram / YouTube Work Scam',
@@ -117,6 +135,15 @@ export default function App() {
       text: '739201 is your one-time password (OTP) for your HDFC Bank NetBanking login attempt at 14:32. HDFC Bank NEVER asks for your OTP, CVV, or PIN via phone call or SMS. NEVER share this OTP with anyone, including bank staff.',
       expected_risk: 'safe',
       description: 'Genuine bank OTP security message containing explicit warning not to share the OTP.'
+    },
+    {
+      id: 'genuine_personal_chat',
+      category: 'Genuine Chat',
+      title: 'Normal Conversational WhatsApp Message',
+      type: 'general',
+      text: 'Hey bro, are we still meeting for lunch tomorrow at 1 PM near the office? Please let me know when you get this.',
+      expected_risk: 'safe',
+      description: 'Everyday casual conversation with no links, no financial demands, and zero threat vectors.'
     }
   ]);
 

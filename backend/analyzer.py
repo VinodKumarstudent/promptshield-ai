@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import logging
 import httpx
@@ -10,7 +11,7 @@ logger = logging.getLogger("promptshield.analyzer")
 
 
 def build_system_prompt() -> str:
-    return """You are PromptShield, an elite Explainable Generative AI system specializing in cyber fraud detection, scam pattern analysis, prohibited link identification (including illicit movie piracy like iBomma, adult/porn scams, and malware droppers), and digital citizen safety.
+    return """You are PromptShield, an elite Explainable Generative AI system specializing in cyber fraud detection, scam pattern analysis, prohibited link identification (including illicit movie piracy like iBomma, adult/porn scams, and malware droppers), digital arrest extortions, electricity bill frauds, and digital citizen safety.
 
 Your job is to analyze user-submitted messages (SMS, email, job offers, payment alerts, movie links, adult/sextortion claims, etc.) and produce a rigorous, explainable, and empathetic safety evaluation.
 
@@ -18,7 +19,7 @@ You MUST respond strictly with a valid JSON object matching this schema:
 {
   "risk_level": "safe" | "suspicious" | "likely_scam",
   "risk_score": <integer from 0 to 100>,
-  "scam_type": "<e.g., Banking Phishing, UPI / QR Code Fraud, Advance Fee Lottery Scam, Fake Job Offer, Delivery Smishing, Prohibited Piracy & Malware APK, Adult Sextortion & Blackmail, Legitimate Notification>",
+  "scam_type": "<e.g., Banking Phishing, UPI / QR Code Fraud, Advance Fee Lottery Scam, Fake Job Offer, Delivery Smishing, Prohibited Piracy & Malware APK, Adult Sextortion & Blackmail, Digital Arrest Extortion, Electricity Disconnection Fraud, Credit Card Points Trap, Legitimate Notification>",
   "red_flags": [
     {
       "quote": "<exact short quote or phrase from the original message>",
@@ -27,17 +28,17 @@ You MUST respond strictly with a valid JSON object matching this schema:
   ],
   "explanation": "<simple plain language explanation in 3 to 4 sentences explaining the verdict clearly to a non-technical user>",
   "safe_next_steps": [
-    "<actionable safe step, e.g., 'Do not click on any link or download APK files', 'Block and report the sender', 'If money or harassment occurred, report immediately to cybercrime.gov.in or dial 1930 in India'>"
+    "<actionable safe step>"
   ],
   "what_not_to_do": [
-    "<critical warning of what to avoid, e.g., 'Never install unknown APKs outside official app stores', 'Never pay blackmail or ransom demands'>"
+    "<critical warning of what to avoid>"
   ]
 }
 
 Guidelines:
-- "safe": 0-30 risk score. Legitimate messages with no malicious triggers.
+- "safe": 0-30 risk score. Legitimate messages, informative alerts, and conversational chats with no malicious triggers.
 - "suspicious": 31-70 risk score. Dubious, unverified, or unusual phrasing.
-- "likely_scam": 71-100 risk score. Obvious signs of fraud, phishing, piracy malware droppers, sextortion, or credential harvesting.
+- "likely_scam": 71-100 risk score. Obvious signs of fraud, phishing, piracy malware droppers, sextortion, digital arrest, utility fraud, or credential harvesting.
 - Quotes in red_flags MUST be exact substrings found in the original message so they can be highlighted in the UI.
 - Do NOT output markdown code blocks (```json ... ```) if possible, or ensure it is valid JSON.
 """
@@ -58,7 +59,7 @@ def build_user_prompt(message: str, message_type: str, rule_findings: List[RuleF
 Automated Rule Engine Findings:
 {rules_summary}
 
-Analyze the message carefully. Identify deceptive patterns, psychological manipulation, credential requests, piracy malware droppers (e.g., iBomma), adult/sextortion blackmail, or spoofed links. Return strict JSON."""
+Analyze the message carefully. Identify deceptive patterns, psychological manipulation, credential requests, piracy malware droppers (e.g., iBomma), adult/sextortion blackmail, digital arrest extortions, or spoofed links. Return strict JSON."""
 
 
 async def call_claude(api_key: str, message: str, message_type: str, rule_findings: List[RuleFinding]) -> Optional[Dict[str, Any]]:
@@ -171,53 +172,138 @@ def find_quote_in_text(target: str, source: str) -> Optional[str]:
 
 def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFinding]) -> Dict[str, Any]:
     """
-    Intelligent explainable fallback AI engine.
-    Computes precise quotes, explainable reasons, contextual safety advice,
-    and calibrated scores based on deep heuristic patterns.
+    Intelligent explainable AI engine.
+    Accurately classifies threats and completely avoids false alarms on legitimate alerts and conversational messages.
     """
     text_lower = message.lower()
     red_flags: List[Dict[str, str]] = []
-    score = 0
     scam_types = []
+    score = 0
 
-    # Category checks
-    has_urgency = any(f.category == "Urgency & Pressure Language" for f in findings)
-    has_credentials = any(f.category == "Credential & Payment Trap" for f in findings)
-    has_too_good = any(f.category == "Too-Good-To-Be-True Offer" for f in findings)
     has_spoofed_url = any(f.category in ["Suspicious or Shortened URLs", "High-Risk Domain TLDs", "Lookalike / Brand Spoofing Link"] for f in findings)
     has_piracy = any("Piracy" in f.category for f in findings)
     has_adult = any("Adult" in f.category for f in findings)
     has_apk = any("APK" in f.category for f in findings)
+    has_digital_arrest = any("Digital Arrest" in f.category for f in findings)
+    has_electricity = any("Electricity" in f.category for f in findings)
+    has_points = any("Points" in f.category for f in findings)
+    has_challan = any("Challan" in f.category for f in findings)
 
-    # 1. URL Analysis
-    for f in findings:
-        if "URL" in f.category or "Domain" in f.category:
-            for phrase in f.matched_phrases:
-                exact_quote = find_quote_in_text(phrase, message) or phrase
-                red_flags.append({
-                    "quote": exact_quote,
-                    "reason": f"Suspicious or unverified domain ('{phrase}'). Scammers direct victims to spoofed portals to harvest credentials or drop malware."
-                })
-                score += 35
+    # -------------------------------------------------------------
+    # 0. FALSE-ALARM FILTER: Check for Legitimate / Safe Messages
+    # -------------------------------------------------------------
+    # Check if this is a legitimate transaction OTP
+    is_legit_otp = bool(
+        re.search(r'\b(?:\d{4,8}\s+is\s+your\s+(?:one\s*time\s*password|otp)|otp\s+(?:is|for\s+login)\s*:?\s*\d{4,8})\b', text_lower) and
+        re.search(r'\b(?:never\s+share|do\s+not\s+share|bank\s+never\s+asks|strictly\s+confidential|valid\s+for)\b', text_lower) and
+        not has_spoofed_url and not ("share your otp" in text_lower or "send otp to" in text_lower or "except our verified" in text_lower)
+    )
 
-    # 2. Piracy & Illicit Media Links (iBomma, MovieRulz, Torrents)
-    if has_piracy or "ibomma" in text_lower or "movierulz" in text_lower or "tamilmv" in text_lower or "torrent" in text_lower:
+    # Check if this is an authentic e-commerce / delivery update
+    is_legit_order = bool(
+        ("order" in text_lower or "shipped" in text_lower or "package" in text_lower) and
+        re.search(r'\b(?:thank\s+you\s+for\s+your\s+order|order\s+#\S+|has\s+been\s+shipped|track\s+(?:your\s+shipment|in\s+your\s+official\s+account)|estimated\s+delivery)\b', text_lower) and
+        not has_spoofed_url and not ("redelivery fee" in text_lower or "incomplete address" in text_lower or "pay rs" in text_lower)
+    )
+
+    # Check if this is an authentic travel confirmation (IRCTC / Uber / Flights)
+    is_legit_travel = bool(
+        re.search(r'\b(?:pnr\s*(?:no\.?|number)?\s*:?\s*\d{10}|coach\s+[a-z]\d+|seat\s+confirmed|happy\s+journey|ride\s+is\s+arriving|driver\s*:\s*[a-z]+|indigo\s+booking|air\s+india)\b', text_lower) and
+        not has_spoofed_url
+    )
+
+    # Check if this is an authentic bill receipt or spend notification
+    is_legit_receipt = bool(
+        re.search(r'\b(?:payment\s+of\s+rs\.?\s*[\d,]+\s+(?:successfully\s+)?received|bill\s+paid\s+successfully|spent\s+on\s+(?:your\s+)?card\s+ending\s+in\s+\d{4}|debited\s+from\s+a\/c\s+ending\s+\d{4}|credited\s+to\s+your\s+account)\b', text_lower) and
+        not has_spoofed_url and not ("power will be disconnected" in text_lower or "update pan" in text_lower)
+    )
+
+    # Check if this is a standard human conversational / work message
+    is_conversational = bool(
+        not extract_urls(message) and
+        not has_apk and not has_piracy and not has_adult and not has_digital_arrest and not has_electricity and
+        not re.search(r'\b(?:otp|cvv|upi\s+pin|bank\s+account|pan\s+card|aadhaar|debit\s+card|bitcoin|lottery|prize|cash\s+prize|telegram|job|earn\s+rs)\b', text_lower) and
+        re.search(r'\b(?:hey|hi|hello|bro|brother|mom|dad|team|dear\s+colleague|good\s+morning|talk\s+to\s+you|call\s+me|meeting|presentation|slides|reached\s+safely|happy\s+birthday|lunch|dinner|tomorrow)\b', text_lower)
+    )
+
+    if (is_legit_otp or is_legit_order or is_legit_travel or is_legit_receipt or is_conversational) and not has_spoofed_url:
+        return {
+            "risk_level": "safe",
+            "risk_score": 8,
+            "scam_type": "Legitimate Notification / Verified Safe",
+            "red_flags": [],
+            "explanation": (
+                "This message represents an authentic, safe communication with zero malicious indicators. "
+                "It contains no suspicious external URLs, no demands for payments or unauthorized fees, and no deceptive credential traps. "
+                "Notice how security-sensitive notifications proactively reinforce safety best practices."
+            ),
+            "safe_next_steps": [
+                "Proceed with your intended legitimate task safely.",
+                "Always verify transactions and order statuses within your official mobile app.",
+                "Remember that authentic institutions will never call or message to solicit your OTP or PIN."
+            ],
+            "what_not_to_do": [
+                "Never share one-time passwords (OTP) with anyone, even if they claim to be company representatives.",
+                "Do not use third-party search engine phone numbers to contact customer service."
+            ]
+        }
+
+    # -------------------------------------------------------------
+    # 1. Digital Arrest / Law Enforcement Extortion
+    # -------------------------------------------------------------
+    if has_digital_arrest or "digital arrest" in text_lower or ("cbi" in text_lower and "narcotics" in text_lower) or ("mumbai crime branch" in text_lower or "ncb" in text_lower) or ("parcel" in text_lower and ("mdma" in text_lower or "drugs" in text_lower)):
+        q = (
+            find_quote_in_text("digital arrest", message) or
+            find_quote_in_text("CBI", message) or
+            find_quote_in_text("Mumbai Crime Branch", message) or
+            find_quote_in_text("narcotics", message) or
+            find_quote_in_text("arrest warrant", message) or
+            "Digital Arrest"
+        )
+        red_flags.append({
+            "quote": q,
+            "reason": "Digital Arrest Extortion Threat: Criminals impersonate law enforcement agencies (CBI, Police, Customs) with fabricated claims of illegal narcotics parcels, coercing victims over video calls to extort money into fake 'verification accounts'. Under Indian law, 'Digital Arrest' does not legally exist."
+        })
+        score += 65
+        scam_types.append("Digital Arrest / Law Enforcement Extortion Scam")
+
+    # -------------------------------------------------------------
+    # 2. Electricity / Utility Power Disconnection Scam
+    # -------------------------------------------------------------
+    if has_electricity or ("electricity" in text_lower and ("disconnected" in text_lower or "officer" in text_lower)) or "power will be disconnected" in text_lower:
+        q = (
+            find_quote_in_text("electricity power will be disconnected", message) or
+            find_quote_in_text("power will be disconnected", message) or
+            find_quote_in_text("contact our electricity officer", message) or
+            find_quote_in_text("previous month bill was not updated", message) or
+            "electricity disconnection"
+        )
+        red_flags.append({
+            "quote": q,
+            "reason": "Utility Disconnection Panic Trap: Scammers create artificial panic alleging an unpaid bill will lead to imminent power disconnection, directing victims to call private mobile numbers or install remote-access APKs. Real electricity distribution utilities never issue disconnection ultimatums from personal phone numbers."
+        })
+        score += 60
+        scam_types.append("Electricity / Utility Disconnection Fraud")
+
+    # -------------------------------------------------------------
+    # 3. Prohibited Piracy Links (iBomma, MovieRulz) & APK Droppers
+    # -------------------------------------------------------------
+    if has_piracy or any(p in text_lower for p in ["ibomma", "movierulz", "tamilmv", "torrent", "watch movie free"]):
         ibomma_q = (
             find_quote_in_text("ibomma", message) or
             find_quote_in_text("movierulz", message) or
             find_quote_in_text("tamilmv", message) or
             find_quote_in_text("torrent", message) or
-            "ibomma"
+            "iBomma"
         )
         red_flags.append({
             "quote": ibomma_q,
             "reason": "Prohibited Pirated Streaming Portal: Platforms like iBomma distribute copyright-infringing content and are legally banned. They serve as primary distribution vectors for infostealers, trojans, and malicious adware."
         })
-        score += 50
+        score += 55
         scam_types.append("Prohibited Piracy & Malware Distribution Threat")
 
-    # 3. Untrusted APK & Mod App Droppers
-    if has_apk or ".apk" in text_lower or "install player app" in text_lower or "download apk" in text_lower:
+    if has_apk or ".apk" in text_lower or "install player app" in text_lower or "download apk" in text_lower or "echallan.apk" in text_lower:
         apk_q = (
             find_quote_in_text(".apk", message) or
             find_quote_in_text("download apk", message) or
@@ -227,14 +313,16 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
         )
         red_flags.append({
             "quote": apk_q,
-            "reason": "Untrusted App Sideloading (APK Dropper): Prompts to sideload Android APK files from outside the Google Play Store frequently install spyware designed to hijack SMS OTPs, contacts, and bank apps."
+            "reason": "Untrusted App Sideloading (APK Dropper): Prompts to sideload Android APK files from outside the Google Play Store install spyware designed to hijack SMS OTPs, contacts, and bank apps."
         })
         score += 45
-        if "Prohibited Piracy & Malware Distribution Threat" not in scam_types:
+        if not scam_types:
             scam_types.append("Malicious APK / Trojan Dropper")
 
-    # 4. Prohibited Adult Lures & Sextortion Blackmail
-    if has_adult or "recorded you" in text_lower or "dirty video" in text_lower or "porn" in text_lower or "compromised your webcam" in text_lower or "pay bitcoin or leak" in text_lower or "xvideos" in text_lower or "nude" in text_lower:
+    # -------------------------------------------------------------
+    # 4. Prohibited Adult Content & Webcam Sextortion Extortion
+    # -------------------------------------------------------------
+    if has_adult or "recorded you" in text_lower or "dirty video" in text_lower or "porn" in text_lower or "compromised your webcam" in text_lower or "pay bitcoin or leak" in text_lower or "xvideos" in text_lower:
         if "recorded you" in text_lower or "compromised your webcam" in text_lower or "dirty video" in text_lower or "leaked video of you" in text_lower:
             extort_q = (
                 find_quote_in_text("recorded you watching", message) or
@@ -258,7 +346,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
             )
             red_flags.append({
                 "quote": btc_q,
-                "reason": "Cryptocurrency Extortion Demand: Demanding untraceable cryptocurrency transfers (Bitcoin, Monero) is the classic hallmark of automated extortion and cyber blackmail rings."
+                "reason": "Cryptocurrency Extortion Demand: Demanding untraceable cryptocurrency transfers is the classic hallmark of automated extortion and cyber blackmail rings."
             })
             score += 45
 
@@ -277,35 +365,61 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_types.append("Adult Content / Sextortion & Blackmail Threat")
 
-    # 5. Fake Job / Task Scam Checks
-    if ("youtube" in text_lower and "like" in text_lower) or "telegram" in text_lower or ("part-time" in text_lower and "per day" in text_lower) or "amazon hr" in text_lower:
-        if "amazon hr" in text_lower:
-            q = find_quote_in_text("Amazon HR", message) or "Amazon HR"
-            red_flags.append({
-                "quote": q,
-                "reason": "Brand Impersonation: Amazon HR does not recruit candidates via unsolicited SMS/WhatsApp messages offering simple video-liking tasks."
-            })
-            score += 25
+    # -------------------------------------------------------------
+    # 5. Credit Card Points / Cashback Phishing
+    # -------------------------------------------------------------
+    if has_points or ("reward points" in text_lower and ("expir" in text_lower or "redeem" in text_lower or "cash" in text_lower)):
+        q = (
+            find_quote_in_text("reward points worth", message) or
+            find_quote_in_text("points expiring today", message) or
+            find_quote_in_text("redeem your reward points", message) or
+            find_quote_in_text("reward points", message) or
+            "reward points"
+        )
+        red_flags.append({
+            "quote": q,
+            "reason": "Credit Card Credential Trap: Attackers invent expiring reward points converted into instant cash to direct victims to phishing pages where card numbers, CVVs, and NetBanking passwords are stolen."
+        })
+        score += 55
+        scam_types.append("Credit Card Reward Points Phishing")
 
-        if "5,000 per day" in text_lower or "rs 5,000" in text_lower or "per day" in text_lower:
-            q = find_quote_in_text("Rs 5,000 per day", message) or find_quote_in_text("Rs 5000 per day", message) or "Rs 5,000 per day"
-            red_flags.append({
-                "quote": q,
-                "reason": "Unrealistic Remuneration: Offering thousands of rupees daily for trivial tasks (liking videos) is the hallmark bait of prepaid task fraud."
-            })
-            score += 30
+    # -------------------------------------------------------------
+    # 6. UPI / QR Code Inversion & PIN Fraud
+    # -------------------------------------------------------------
+    if "qr" in text_lower and ("scan" in text_lower or "receive" in text_lower or "refund" in text_lower):
+        q = find_quote_in_text("Scan this QR code", message) or find_quote_in_text("Scan", message) or "Scan this QR code"
+        red_flags.append({
+            "quote": q,
+            "reason": "QR Code Inversion Trap: Scanning a QR code ALWAYS transfers money OUT of your account. You NEVER need to scan a QR code to receive refunds."
+        })
+        score += 50
+        scam_types.append("UPI QR Code / Refund Trap")
 
-        if "telegram" in text_lower:
-            q = find_quote_in_text("@amazontaskrecruiter", message) or find_quote_in_text("telegram", message) or "Telegram"
-            red_flags.append({
-                "quote": q,
-                "reason": "Channel Redirection: Shifting conversations to untraceable Telegram handles allows scammers to manipulate victims into depositing money into fraudulent investment wallets."
-            })
-            score += 30
+    if "upi pin" in text_lower or "enter your pin" in text_lower or "enter your upi pin" in text_lower:
+        pin_q = (
+            find_quote_in_text("enter your UPI PIN", message) or
+            find_quote_in_text("UPI PIN", message) or
+            "UPI PIN"
+        )
+        red_flags.append({
+            "quote": pin_q,
+            "reason": "PIN Disclosure Trap: Entering your UPI PIN authorizes an instant debit from your bank. PIN is NEVER required to receive money."
+        })
+        score += 45
+        if "UPI QR Code / Refund Trap" not in scam_types:
+            scam_types.append("UPI Financial Theft")
 
-        scam_types.append("Fake Job / Task-Based Telegram Fraud")
+    if "except our verified executive" in text_lower or "share your otp" in text_lower:
+        otp_q = find_quote_in_text("except our verified executive", message) or find_quote_in_text("share your otp", message) or "OTP"
+        red_flags.append({
+            "quote": otp_q,
+            "reason": "Social Engineering Trap: Claiming executives can be shared an OTP with is a deception tactic to bypass bank 2-factor authentication."
+        })
+        score += 40
 
-    # 6. Lottery / Lucky Draw Checks
+    # -------------------------------------------------------------
+    # 7. Advance-Fee Lottery & Lucky Draw (KBC, WhatsApp Lottery)
+    # -------------------------------------------------------------
     if "lottery" in text_lower or "lucky draw" in text_lower or "won a cash prize" in text_lower or "25,00,000" in text_lower:
         if "25,00,000" in text_lower or "cash prize" in text_lower:
             q = find_quote_in_text("cash prize of Rs 25,00,000", message) or find_quote_in_text("cash prize", message) or "cash prize"
@@ -338,42 +452,40 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_types.append("Lottery / Advance-Fee Scam")
 
-    # 7. UPI / QR / PIN Checks
-    if "qr" in text_lower and ("scan" in text_lower or "receive" in text_lower or "refund" in text_lower):
-        q = find_quote_in_text("Scan this QR code", message) or find_quote_in_text("Scan", message) or "Scan this QR code"
-        red_flags.append({
-            "quote": q,
-            "reason": "QR Code Inversion Trap: Scanning a QR code ALWAYS transfers money OUT of your account. You NEVER need to scan a QR code to receive refunds."
-        })
-        score += 45
-        scam_types.append("UPI QR Code / Refund Trap")
-
-    if "upi pin" in text_lower or "enter your pin" in text_lower or "enter your upi pin" in text_lower:
-        pin_q = (
-            find_quote_in_text("enter your UPI PIN", message) or
-            find_quote_in_text("UPI PIN", message) or
-            "UPI PIN"
-        )
-        red_flags.append({
-            "quote": pin_q,
-            "reason": "PIN Disclosure Trap: Entering your UPI PIN authorizes an instant debit from your bank. PIN is NEVER required to receive money."
-        })
-        score += 40
-        scam_types.append("UPI Financial Theft")
-
-    if "otp" in text_lower:
-        if "never share" in text_lower or "do not share" in text_lower and not has_spoofed_url and not has_urgency and len(findings) <= 1:
-            pass
-        elif "except our verified executive" in text_lower or "share your otp" in text_lower or "enter otp" in text_lower:
-            otp_q = find_quote_in_text("except our verified executive", message) or find_quote_in_text("OTP", message) or "OTP"
+    # -------------------------------------------------------------
+    # 8. Fake Job / Task Telegram Fraud
+    # -------------------------------------------------------------
+    if ("youtube" in text_lower and "like" in text_lower) or "telegram" in text_lower or ("part-time" in text_lower and "per day" in text_lower) or "amazon hr" in text_lower:
+        if "amazon hr" in text_lower:
+            q = find_quote_in_text("Amazon HR", message) or "Amazon HR"
             red_flags.append({
-                "quote": otp_q,
-                "reason": "Social Engineering Trap: Claiming executives can be shared an OTP with is a deception tactic to bypass bank 2-factor authentication."
+                "quote": q,
+                "reason": "Brand Impersonation: Amazon HR does not recruit candidates via unsolicited SMS/WhatsApp messages offering simple video-liking tasks."
             })
-            score += 35
+            score += 25
 
-    # 8. Delivery Smishing Checks
-    if ("parcel" in text_lower or "delivery" in text_lower or "package" in text_lower) and ("fee" in text_lower or "redeliver" in text_lower or "incomplete address" in text_lower):
+        if "5,000 per day" in text_lower or "rs 5,000" in text_lower or "per day" in text_lower:
+            q = find_quote_in_text("Rs 5,000 per day", message) or find_quote_in_text("Rs 5000 per day", message) or "Rs 5,000 per day"
+            red_flags.append({
+                "quote": q,
+                "reason": "Unrealistic Remuneration: Offering thousands of rupees daily for trivial tasks (liking videos) is the hallmark bait of prepaid task fraud."
+            })
+            score += 30
+
+        if "telegram" in text_lower:
+            q = find_quote_in_text("@amazontaskrecruiter", message) or find_quote_in_text("telegram", message) or "Telegram"
+            red_flags.append({
+                "quote": q,
+                "reason": "Channel Redirection: Shifting conversations to untraceable Telegram handles allows scammers to manipulate victims into depositing money into fraudulent investment wallets."
+            })
+            score += 30
+
+        scam_types.append("Fake Job / Task-Based Telegram Fraud")
+
+    # -------------------------------------------------------------
+    # 9. Courier & Delivery Smishing
+    # -------------------------------------------------------------
+    if ("parcel" in text_lower or "delivery" in text_lower or "package" in text_lower) and ("redelivery fee" in text_lower or "fee within" in text_lower or "incomplete address" in text_lower):
         if "redelivery fee" in text_lower or "fee within" in text_lower:
             deliv_q = find_quote_in_text("Pay Rs 48 redelivery fee", message) or find_quote_in_text("redelivery fee", message) or "redelivery fee"
             red_flags.append({
@@ -392,8 +504,44 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
 
         scam_types.append("Courier / Delivery Fee Smishing")
 
-    # 9. Urgency & Account Suspension Checks
-    if has_urgency:
+    # -------------------------------------------------------------
+    # 10. Banking Phishing & Fake KYC
+    # -------------------------------------------------------------
+    if "kyc" in text_lower or "pan and aadhaar" in text_lower or "pan card" in text_lower or "netbanking access will be" in text_lower:
+        if has_spoofed_url or "suspended" in text_lower or "blocked" in text_lower or "within 24 hours" in text_lower:
+            kyc_q = (
+                find_quote_in_text("pending KYC verification", message) or
+                find_quote_in_text("update your PAN and Aadhaar", message) or
+                find_quote_in_text("NetBanking access will be permanently suspended", message) or
+                find_quote_in_text("KYC", message) or
+                "KYC"
+            )
+            red_flags.append({
+                "quote": kyc_q,
+                "reason": "Regulatory Phishing Impersonation: Banks never send web links in SMS asking users to upload identity documents or unfreeze accounts."
+            })
+            score += 35
+            scam_types.append("Banking Phishing (Fake KYC / Account Suspension)")
+
+    # -------------------------------------------------------------
+    # 11. URL / Domain Checks (General)
+    # -------------------------------------------------------------
+    for f in findings:
+        if "URL" in f.category or "Domain" in f.category:
+            for phrase in f.matched_phrases:
+                exact_quote = find_quote_in_text(phrase, message) or phrase
+                red_flags.append({
+                    "quote": exact_quote,
+                    "reason": f"Suspicious or unverified domain ('{phrase}'). Scammers direct victims to spoofed portals to harvest credentials or drop malware."
+                })
+                score += 35
+                if not scam_types:
+                    scam_types.append("Deceptive Phishing Link / Domain Spoofing")
+
+    # -------------------------------------------------------------
+    # 12. Urgency with Harm Vector
+    # -------------------------------------------------------------
+    if (scam_types or score >= 35) and any(f.category == "Urgency & Pressure Language" for f in findings):
         urgency_q = (
             find_quote_in_text("within 24 hours", message) or
             find_quote_in_text("permanently suspended", message) or
@@ -406,20 +554,7 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
             "quote": urgency_q,
             "reason": "Artificial Time Pressure: Scammers impose arbitrary countdowns (e.g. 12/24 hours) to prevent victims from verifying with official customer support."
         })
-        score += 30
-        if not scam_types:
-            scam_types.append("Urgent Account Suspension Threat")
-
-    # 10. Fake KYC / PAN Update
-    if "kyc" in text_lower or "pan and aadhaar" in text_lower:
-        if has_spoofed_url or has_urgency:
-            kyc_q = find_quote_in_text("pending KYC verification", message) or find_quote_in_text("update your PAN and Aadhaar", message) or find_quote_in_text("KYC", message) or "KYC"
-            red_flags.append({
-                "quote": kyc_q,
-                "reason": "Regulatory Phishing Impersonation: Banks never send web links in SMS asking users to upload identity documents or unfreeze accounts."
-            })
-            score += 30
-            scam_types.append("Banking Phishing (Fake KYC)")
+        score += 20
 
     # Deduplicate red flags by quote
     unique_red_flags = []
@@ -430,45 +565,69 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
             seen_quotes.add(key)
             unique_red_flags.append(rf)
 
-    # Check for genuine messages
-    is_safe = False
-    if ("hdfc bank never asks" in text_lower and "never share this otp" in text_lower) or \
-       ("your official amazon account under your orders" in text_lower) or \
-       ("thank you for your order" in text_lower and not has_spoofed_url and not has_urgency and not has_credentials and not has_piracy and not has_adult):
-        is_safe = True
-
-    if is_safe:
+    # -------------------------------------------------------------
+    # Score Calibration and Verdict
+    # -------------------------------------------------------------
+    if not unique_red_flags and score < 25:
         score = 8
         risk_level = "safe"
-        scam_type = "Legitimate Notification / Verified Alert"
+        scam_type = "Legitimate Notification / Safe Message"
         explanation = (
-            "This message appears to be a legitimate communication from an authorized service provider. "
-            "It does not contain suspicious external links, coercive countdown threats, or requests for unauthorized payments. "
-            "Notice how it reinforces digital safety guidelines by reminding you never to disclose credentials."
+            "No deceptive patterns, credential traps, or unauthorized payment requests were identified in this message. "
+            "It appears to be a legitimate communication or conversational exchange."
         )
         safe_steps = [
             "Proceed with your intended legitimate task safely.",
-            "Always verify orders or transactions directly within your official mobile application.",
+            "Always verify orders or transactions directly within official mobile applications.",
             "Remember that legitimate institutions will never ask for your passwords or OTP over SMS or phone calls."
         ]
         what_not_to_do = [
-            "Do not forward one-time passwords (OTP) to anyone even if they claim to be company representatives.",
-            "Do not use third-party search engine phone numbers to contact customer service."
+            "Never share passwords or one-time codes with anyone.",
+            "Do not click unknown links sent by unsolicited contacts."
         ]
-        unique_red_flags = []
     else:
-        score = min(max(score, 20 if findings else 5), 98)
-
-        if score >= 65:
+        score = min(max(score, 75 if scam_types else 35), 98)
+        if score >= 70:
             risk_level = "likely_scam"
         elif score >= 35:
             risk_level = "suspicious"
         else:
             risk_level = "safe"
 
-        scam_type = scam_types[0] if scam_types else ("Suspicious Unverified Message" if risk_level != "safe" else "Safe Communication")
+        scam_type = scam_types[0] if scam_types else ("Suspicious Unverified Communication" if risk_level != "safe" else "Safe Message")
 
-        if "Piracy" in scam_type or "Malware APK" in scam_type:
+        # Contextual Explanations & Advice
+        if "Digital Arrest" in scam_type:
+            explanation = (
+                "This message is a fraudulent Digital Arrest extortion scam. Cyber criminals impersonate police, CBI, or customs officials claiming an illegal parcel with drugs or passports was booked in your name. "
+                "They intimidate victims over video calls to extort money into fake 'verification accounts'. "
+                "Under Indian law, there is NO legal concept of 'Digital Arrest' and police never interrogate citizens on WhatsApp or Skype."
+            )
+            safe_steps = [
+                "Disconnect and terminate all calls or video sessions immediately.",
+                "Do NOT transfer any money or disclose your bank account details.",
+                "Report immediately to the National Cybercrime Helpline 1930 or file a complaint at cybercrime.gov.in.",
+                "Block and report the offending phone numbers in your messaging client."
+            ]
+            what_not_to_do = [
+                "NEVER transfer funds to so-called 'RBI verification' or police accounts to prove innocence.",
+                "Do not stay on video calls or follow intimidation orders."
+            ]
+        elif "Electricity" in scam_type:
+            explanation = (
+                "This message is an electricity bill disconnection fraud. Attackers exploit panic by claiming power supply will be cut off tonight due to an unpaid bill, urging you to call a personal phone number. "
+                "Real electricity distribution companies (DISCOMs) never issue power cut ultimatums from 10-digit individual mobile numbers."
+            )
+            safe_steps = [
+                "Do NOT call the personal mobile number provided in the message.",
+                "Check your actual electricity bill and payment status through the official DISCOM website or mobile app.",
+                "Report the fraudulent mobile number to 1930 or cybercrime.gov.in."
+            ]
+            what_not_to_do = [
+                "Never call unverified personal phone numbers listed in SMS alerts.",
+                "Never install remote access applications (AnyDesk, TeamViewer, or APKs) suggested by callers."
+            ]
+        elif "Piracy" in scam_type or "APK" in scam_type:
             explanation = (
                 f"This message promotes a prohibited pirated streaming destination or unverified APK dropper ({scam_type}). "
                 "Sites like iBomma and unverified streaming links are legally banned and heavily weaponized with spyware, adware, and trojans. "
@@ -502,6 +661,20 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
                 "Do not reply or negotiate with the attacker.",
                 "Do not click on adult verification links or download attachments claimed to contain 'proof'."
             ]
+        elif "Points" in scam_type:
+            explanation = (
+                "This message is a credit card reward points phishing trap. Scammers lure victims with promises of expiring reward points converted into instant bank cash. "
+                "The link leads to a cloned bank website designed to steal your 16-digit card number, CVV, NetBanking credentials, and OTP."
+            )
+            safe_steps = [
+                "Check your genuine credit card reward points exclusively inside your official bank app or monthly statement.",
+                "Do NOT click any web links in the message.",
+                "If card details were already entered, contact your bank immediately to block the card."
+            ]
+            what_not_to_do = [
+                "NEVER enter card numbers, CVVs, or OTPs on links sent via SMS.",
+                "Remember that banks never convert points to cash via external web links."
+            ]
         elif risk_level == "likely_scam":
             explanation = (
                 f"This message displays classic characteristics of a {scam_type}. "
@@ -519,33 +692,17 @@ def heuristic_ai_analyze(message: str, message_type: str, findings: List[RuleFin
                 "NEVER share OTP, CVV, NetBanking passwords, or Aadhaar/PAN details with anyone.",
                 "Do not reply to the sender or transfer any advance registration, customs, or refundable fees."
             ]
-        elif risk_level == "suspicious":
-            explanation = (
-                "This message contains several ambiguous or unusual characteristics that warrant caution. "
-                "While it may not be an outright scam, it exhibits flags such as unverified claims, unexpected links, or vague urgency. "
-                "Avoid interacting directly until you have verified the sender through established official channels."
-            )
-            safe_steps = [
-                "Cross-check the sender's email address or phone number against official company contacts.",
-                "Log into your account independently through the official website rather than using provided links.",
-                "Inspect any URLs thoroughly for lookalike characters or unusual domain extensions."
-            ]
-            what_not_to_do = [
-                "Do not download attachments or provide personal details to unverified contacts.",
-                "Do not feel pressured to take immediate financial actions."
-            ]
         else:
             explanation = (
-                "The message does not display prominent red flags or coercive language. "
-                "However, always practice basic digital hygiene when reviewing unexpected communications. "
-                "Ensure links lead directly to authentic, secure official websites."
+                "This message contains ambiguous or unverified elements that warrant caution. "
+                "While not an outright confirmed attack, exercise vigilance before sharing information or opening links."
             )
             safe_steps = [
-                "Verify sender authenticity if unexpected.",
-                "Keep your security apps and operating system updated."
+                "Cross-check the sender's identity through official channels.",
+                "Avoid interacting directly until sender authenticity is confirmed."
             ]
             what_not_to_do = [
-                "Never share sensitive passwords or one-time codes."
+                "Do not share personal details with unverified contacts."
             ]
 
     return {
