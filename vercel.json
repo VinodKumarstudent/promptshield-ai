@@ -1,0 +1,22 @@
+{
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/analyze",
+      "destination": "https://promptshield-api.onrender.com/analyze"
+    },
+    {
+      "source": "/samples",
+      "destination": "https://promptshield-api.onrender.com/samples"
+    },
+    {
+      "source": "/health",
+      "destination": "https://promptshield-api.onrender.com/health"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
