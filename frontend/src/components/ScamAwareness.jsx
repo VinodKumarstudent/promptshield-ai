@@ -24,8 +24,8 @@ const SCAM_TOPICS = [
   },
   {
     id: 'job_task',
-    iconGradient: 'from-purple-500 via-fuchsia-600 to-pink-500',
-    borderColor: 'border-purple-500/30',
+    iconGradient: 'from-indigo-600 via-blue-600 to-cyan-500',
+    borderColor: 'border-indigo-500/30',
     iconEmoji: '💼',
     category: 'Employment Scams',
     title: 'Work From Home & YouTube Task Frauds',
@@ -177,10 +177,10 @@ export default function ScamAwareness() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="rounded-3xl apple-glass-card p-6 sm:p-10 text-center relative overflow-hidden border border-cyan-500/30 shadow-2xl">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 border border-white/20 text-xs font-bold uppercase tracking-wider text-cyan-300 mb-3.5 shadow-md">
-          <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
-          <span>Security Knowledge Center</span>
+      <div className="rounded-2xl cyber-panel p-6 sm:p-10 text-center relative overflow-hidden border border-cyan-500/30">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-cyan-950/60 border border-cyan-500/30 text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 mb-3.5">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Security Threat Knowledge Center</span>
         </div>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
           Common Scam Blueprints
@@ -209,10 +209,10 @@ export default function ScamAwareness() {
           return (
             <div
               key={topic.id}
-              className={`rounded-3xl border transition-all duration-300 overflow-hidden ${
+              className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
                 isExpanded
-                  ? `apple-glass-card ${topic.borderColor} shadow-2xl`
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10'
+                  ? `cyber-panel ${topic.borderColor} shadow-xl shadow-cyan-950/20`
+                  : 'cyber-panel hover:border-slate-700'
               }`}
             >
               <button

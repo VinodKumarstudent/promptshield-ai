@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield,
   ShieldAlert,
+  ShieldCheck,
   Send,
   RotateCcw,
   AlertTriangle,
@@ -14,6 +15,10 @@ import {
   Command,
   ArrowRight,
   ChevronDown,
+  Clipboard,
+  PhoneCall,
+  Terminal,
+  ExternalLink,
 } from 'lucide-react';
 
 import Navbar from './components/Navbar';
@@ -225,12 +230,24 @@ export default function App() {
     setError(null);
   };
 
+  const handlePasteClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setMessage(text);
+        setError(null);
+      }
+    } catch {
+      // Fallback if browser permission is blocked
+    }
+  };
+
   const handleAnalyze = async (customMessage = null, customType = null) => {
     const textToAnalyze = (customMessage !== null ? customMessage : message).trim();
     const typeToUse = customType !== null ? customType : messageType;
 
     if (!textToAnalyze) {
-      setError('Please paste or type a suspicious message to inspect.');
+      setError('Please paste or type a suspicious message, link, or notification to inspect.');
       return;
     }
 
@@ -290,13 +307,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#070913] text-[#f8fafc] relative selection:bg-pink-500/30 selection:text-white">
-      {/* Dynamic Luminous Multi-Color Atmospheric Mesh */}
+    <div className="min-h-screen flex flex-col bg-[#040714] text-slate-100 relative cyber-grid-pattern selection:bg-cyan-500/30 selection:text-cyan-100">
+      {/* Subtle brand ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-tr from-indigo-600/30 via-purple-600/25 to-pink-600/25 rounded-full blur-[140px] animate-ambient-1" />
-        <div className="absolute top-[28%] -left-48 w-[600px] h-[500px] bg-gradient-to-br from-cyan-500/25 to-blue-600/20 rounded-full blur-[130px] animate-ambient-2" />
-        <div className="absolute top-[48%] -right-48 w-[650px] h-[550px] bg-gradient-to-bl from-pink-600/25 via-purple-600/20 to-indigo-600/25 rounded-full blur-[140px] animate-ambient-3" />
-        <div className="absolute bottom-0 left-1/3 w-[700px] h-[400px] bg-teal-500/15 rounded-full blur-[150px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[850px] h-[380px] bg-gradient-to-b from-cyan-500/10 via-blue-600/5 to-transparent rounded-full blur-[120px]" />
+        <div className="absolute bottom-10 right-10 w-[500px] h-[350px] bg-blue-600/5 rounded-full blur-[140px]" />
       </div>
 
       {/* Floating Translucent Navbar */}
@@ -308,163 +323,196 @@ export default function App() {
       />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 space-y-10 relative z-10">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8 relative z-10">
         {activeTab === 'awareness' ? (
           <ScamAwareness />
         ) : (
-          <div className="space-y-10">
-            {/* Hero Header with Shimmering Jewel Gradient */}
-            <div className="text-center max-w-2xl mx-auto space-y-3.5 pt-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/15 via-purple-500/15 to-pink-500/15 border border-white/20 text-xs font-bold tracking-wide text-cyan-200 shadow-lg shadow-purple-500/10 backdrop-blur-xl">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-spin" style={{ animationDuration: '6s' }} />
-                <span>Next-Gen Scam Intelligence</span>
+          <div className="space-y-8">
+            {/* Hero Section with Official Brand Emblem */}
+            <div className="text-center max-w-3xl mx-auto space-y-4 pt-4">
+              {/* Official Logo Display */}
+              <div className="inline-block relative group mb-1">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-2xl overflow-hidden border border-cyan-400/40 shadow-2xl shadow-cyan-500/25 bg-[#060919] p-1 transition-all duration-300 group-hover:scale-105 group-hover:border-cyan-300">
+                  <img
+                    src="/logo.jpg"
+                    alt="PromptShield AI"
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                </div>
               </div>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-none bg-gradient-to-b from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent drop-shadow-sm">
-                Scams Exposed. <br />
-                <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-pink-400 bg-clip-text text-transparent">
-                  Instantly Explained.
+
+              {/* Title & Tagline */}
+              <div className="space-y-2">
+                <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+                  PromptShield <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500 bg-clip-text text-transparent">AI</span>
+                </h1>
+                <p className="text-xs sm:text-sm font-semibold tracking-wider text-cyan-300 uppercase">
+                  Detect Scams • Understand Risks • Stay Safe
+                </p>
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-normal">
+                  Explainable AI forensics to identify deceptive phishing, piracy trojans, UPI traps, and social engineering attacks before you click or pay.
+                </p>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2 text-xs text-slate-300">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10">
+                  <Lock className="w-3 h-3 text-emerald-400" />
+                  <span>Zero Server Storage</span>
                 </span>
-              </h1>
-              <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto font-normal">
-                Paste suspicious emails, SMS alerts, job offers, or delivery notices. PromptShield pinpoints deception traps with explainable AI forensics.
-              </p>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10">
+                  <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                  <span>100% On-Device Offline Engine</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10">
+                  <PhoneCall className="w-3 h-3 text-rose-400" />
+                  <span>Dial 1930 / cybercrime.gov.in</span>
+                </span>
+              </div>
             </div>
 
-            {/* Radiant One-Tap Preset Tokens */}
+            {/* Interactive Threat Test Bench (Quick Presets) */}
             <AppleQuickPresets
               samples={samples}
               onSelectSample={handleSelectSample}
               activeSampleId={activeSampleId}
             />
 
-            {/* Glowing Chromatic Input Capsule */}
-            <div className="gradient-border-capsule shadow-2xl shadow-indigo-500/15">
-              <div
-                className={`rounded-[26px] bg-[#0c0e20]/90 backdrop-blur-3xl p-5 sm:p-7 transition-all duration-300 ${
-                  isInputFocused ? 'bg-[#0f1228]/95' : ''
-                }`}
-              >
-                {/* Privacy Badge */}
-                <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-white/10 text-xs text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center">
-                      <Lock className="w-3 h-3 text-emerald-300" />
-                    </div>
-                    <span className="font-semibold text-emerald-300">Encrypted In-Memory Processing</span>
-                    <span className="text-slate-600">•</span>
-                    <span className="hidden sm:inline text-slate-400">Zero Server Logging</span>
-                  </div>
+            {/* Threat Inspection Console */}
+            <div className="cyber-panel rounded-2xl p-5 sm:p-6 transition-all duration-300 border border-cyan-500/20 shadow-xl shadow-black/50">
+              {/* Console Header */}
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/[0.08] text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                  <span className="font-bold uppercase tracking-wider text-slate-200 text-[11px]">
+                    Threat Inspection Console
+                  </span>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-slate-400 text-[11px] hidden sm:inline">
+                    Private In-Memory Analysis
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handlePasteClipboard}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-cyan-300 hover:text-white transition px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10"
+                    title="Paste from clipboard"
+                  >
+                    <Clipboard className="w-3 h-3" />
+                    <span>Paste</span>
+                  </button>
                   {message && (
                     <button
                       onClick={handleReset}
-                      className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-white transition px-2.5 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12]"
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-rose-300 transition px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10"
                     >
                       <RotateCcw className="w-3 h-3" />
                       <span>Clear</span>
                     </button>
                   )}
                 </div>
-
-                {/* Seamless High-Contrast Textarea */}
-                <div className="relative">
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onFocus={() => setIsInputFocused(true)}
-                    onBlur={() => setIsInputFocused(false)}
-                    onKeyDown={(e) => {
-                      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAnalyze();
-                      }
-                    }}
-                    rows={4}
-                    placeholder="Paste the suspicious text, email, job offer, or delivery link here..."
-                    className="w-full bg-transparent text-white placeholder-slate-400 text-base sm:text-lg focus:outline-none resize-none font-medium leading-relaxed tracking-tight"
-                  />
-                </div>
-
-                {/* Bottom Action Bar */}
-                <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  {/* Message Type Selector */}
-                  <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                    <div className="relative inline-flex items-center">
-                      <select
-                        value={messageType}
-                        onChange={(e) => setMessageType(e.target.value)}
-                        className="appearance-none bg-white/[0.08] hover:bg-white/[0.14] text-xs font-semibold text-cyan-200 border border-cyan-400/30 rounded-full pl-3.5 pr-8 py-2 focus:outline-none transition cursor-pointer shadow-sm shadow-cyan-500/10"
-                      >
-                        <option value="general" className="bg-[#121633] text-white">General Message</option>
-                        <option value="email" className="bg-[#121633] text-white">Email Phishing</option>
-                        <option value="sms" className="bg-[#121633] text-white">SMS / Text</option>
-                        <option value="job_offer" className="bg-[#121633] text-white">Job / Task Scam</option>
-                        <option value="payment_upi" className="bg-[#121633] text-white">UPI / QR Fraud</option>
-                        <option value="delivery" className="bg-[#121633] text-white">Courier Smishing</option>
-                        <option value="lottery" className="bg-[#121633] text-white">Lottery Fraud</option>
-                      </select>
-                      <ChevronDown className="w-3.5 h-3.5 text-cyan-300 absolute right-3 pointer-events-none" />
-                    </div>
-
-                    <span className="text-[11px] text-slate-400 font-mono hidden md:inline">
-                      {message.length} chars
-                    </span>
-                  </div>
-
-                  {/* Luminous Inspect Button */}
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <span className="text-[11px] text-slate-400 hidden sm:flex items-center gap-1 font-semibold">
-                      <kbd className="px-1.5 py-0.5 rounded bg-white/[0.1] text-slate-200 font-mono text-[10px]">⌘</kbd>
-                      <kbd className="px-1.5 py-0.5 rounded bg-white/[0.1] text-slate-200 font-mono text-[10px]">↵</kbd>
-                    </span>
-
-                    <button
-                      onClick={() => handleAnalyze()}
-                      disabled={isLoading || !message.trim()}
-                      className={`w-full sm:w-auto px-7 py-2.5 rounded-full font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
-                        isLoading || !message.trim()
-                          ? 'bg-white/[0.08] text-slate-500 border border-white/10 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-cyan-400 via-indigo-500 to-pink-500 hover:from-cyan-300 hover:via-indigo-400 hover:to-pink-400 text-white shadow-xl shadow-indigo-500/35 active:scale-95'
-                      }`}
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          <span>Running Forensics...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 text-cyan-200" />
-                          <span>Inspect Threat</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Error Banner */}
-                {error && (
-                  <div className="mt-4 p-4 rounded-2xl bg-rose-950/40 border border-rose-500/50 text-rose-200 text-xs flex items-center gap-2.5">
-                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>{error}</span>
-                  </div>
-                )}
               </div>
+
+              {/* Textarea */}
+              <div className="relative">
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAnalyze();
+                    }
+                  }}
+                  rows={4}
+                  placeholder="Paste suspicious text, SMS alert, email message, job offer, or delivery link here..."
+                  className="w-full bg-transparent text-white placeholder-slate-500 text-sm sm:text-base focus:outline-none resize-none font-medium leading-relaxed"
+                />
+              </div>
+
+              {/* Console Bottom Action Bar */}
+              <div className="mt-4 pt-3.5 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3">
+                {/* Channel / Type Selector */}
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <div className="relative inline-flex items-center">
+                    <select
+                      value={messageType}
+                      onChange={(e) => setMessageType(e.target.value)}
+                      className="appearance-none bg-slate-900/80 hover:bg-slate-850 text-xs font-semibold text-slate-200 border border-slate-700/80 rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:border-cyan-400 transition cursor-pointer"
+                    >
+                      <option value="general">General Message / Claim</option>
+                      <option value="email">Email Phishing</option>
+                      <option value="sms">SMS / Text Message</option>
+                      <option value="job_offer">Job / Telegram Task Scam</option>
+                      <option value="payment_upi">UPI / QR Code Fraud</option>
+                      <option value="delivery">Courier / Redelivery Smishing</option>
+                      <option value="lottery">Lottery / Grand Prize</option>
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 pointer-events-none" />
+                  </div>
+
+                  <span className="text-[11px] text-slate-400 font-mono hidden md:inline">
+                    {message.length} chars
+                  </span>
+                </div>
+
+                {/* Inspect Button & Shortcut */}
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                  <span className="text-[11px] text-slate-400 hidden sm:flex items-center gap-1 font-semibold">
+                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-300 font-mono text-[10px]">⌘</kbd>
+                    <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] text-slate-300 font-mono text-[10px]">↵</kbd>
+                  </span>
+
+                  <button
+                    onClick={() => handleAnalyze()}
+                    disabled={isLoading || !message.trim()}
+                    className={`w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 ${
+                      isLoading || !message.trim()
+                        ? 'bg-white/[0.06] text-slate-500 border border-white/[0.08] cursor-not-allowed'
+                        : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/25 active:scale-95 cursor-pointer'
+                    }`}
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Running Threat Forensics...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Shield className="w-4 h-4 text-cyan-200" />
+                        <span>Inspect for Threats</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Error Notice */}
+              {error && (
+                <div className="mt-4 p-3.5 rounded-xl bg-rose-950/40 border border-rose-500/50 text-rose-200 text-xs flex items-center gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
             </div>
 
             {/* Results Section */}
             {analysisResult && (
-              <div id="analysis-results-section" className="space-y-8 pt-4 scroll-mt-24">
+              <div id="analysis-results-section" className="space-y-6 pt-2 scroll-mt-24">
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center">
-                      <Shield className="w-3.5 h-3.5 text-cyan-300" />
+                    <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-cyan-300" />
                     </div>
-                    <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
-                      Forensic Security Report
+                    <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+                      Forensic Security Audit
                     </h2>
                   </div>
-                  <span className="text-xs text-cyan-300 font-mono bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-400/25">
-                    ● Analysis Completed
+                  <span className="text-xs text-cyan-300 font-mono bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-400/25">
+                    ● Analysis Verified
                   </span>
                 </div>
 
@@ -507,18 +555,21 @@ export default function App() {
         onDeleteItem={handleDeleteHistoryItem}
       />
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-white/10 bg-[#060814]/80 backdrop-blur-xl py-8 text-xs text-slate-400 relative z-10">
+      {/* Footer with Logo & Official Reporting Protocols */}
+      <footer className="mt-auto border-t border-white/[0.08] bg-[#050818]/90 backdrop-blur-xl py-6 text-xs text-slate-400 relative z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="space-y-1">
-            <div className="flex items-center justify-center sm:justify-start gap-2">
-              <span className="font-extrabold text-white">PromptShield</span>
-              <span className="text-slate-600">|</span>
-              <span className="text-cyan-300 font-medium">Luminous Edition</span>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-cyan-400/30 bg-[#060919] p-0.5 shrink-0">
+              <img src="/logo.jpg" alt="PromptShield AI" className="w-full h-full object-cover rounded" />
             </div>
-            <p className="text-[11px] text-slate-400">
-              AI guidance, not a guarantee. When unsure, verify through official channels.
-            </p>
+            <div className="space-y-0.5">
+              <div className="font-extrabold text-white text-xs sm:text-sm">
+                PromptShield AI <span className="text-slate-500 text-[11px] font-normal">• Detect Scams | Understand Risks | Stay Safe</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Explainable digital safety intelligence. Verify unexpected requests through verified official channels.
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-300">
@@ -527,9 +578,10 @@ export default function App() {
               href="https://cybercrime.gov.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-300 font-semibold transition"
+              className="text-cyan-400 hover:text-cyan-300 font-semibold transition inline-flex items-center gap-1"
             >
-              cybercrime.gov.in
+              <span>cybercrime.gov.in</span>
+              <ExternalLink className="w-3 h-3" />
             </a>
             <span className="text-slate-600">•</span>
             <span>Zero Data Retention</span>
